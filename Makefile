@@ -6,9 +6,14 @@ STAGE1_DIR 		:= stage1
 KERNEL_DIR 		:= kernel
 
 BUILD_DIR		:= build
-KERNEL_SRC_DIR	:= $(KERNEL_DIR)\src
+KERNEL_SRC_DIR	:= $(KERNEL_DIR)/src
+KERNEL_ASM_SRC_DIR := $(KERNEL_SRC_DIR)/asm
 KERNEL_SRCS		:= $(shell find $(KERNEL_SRC_DIR) -name '*.cpp')
-KERNEL_OBJS		:= $(KERNEL_SRCS:%=$(BUILD_DIR)/%.o)
+KERNEL_ASM_SRCS := $(shell find $(KERNEL_SRC_DIR) -name '*.asm')
+KERNEL_LIB_DIR	:= $(KERNEL_DIR)/Lib
+KERNEL_LIB_SRC_DIR := $(KERNEL_LIB_DIR)/src
+KERNEL_LIB_SRCS := $(shell find $(KERNEL_LIB_SRC_DIR) -name '*.cpp')
+KERNEL_OBJS		:= $(KERNEL_ASM_SRCS:%=$(BUILD_DIR)/%.o) $(KERNEL_SRCS:%=$(BUILD_DIR)/%.o) $(KERNEL_LIB_SRCS:%=$(BUILD_DIR)/%.o)
 
 disk1.img: $(BOOTSECT_DIR)/bootsect.bin $(STAGE1_DIR)/KRNLDR.SYS $(KERNEL_DIR)/KRNL.SYS
 	@echo "[.......Creating Disk........]"
@@ -30,23 +35,17 @@ $(STAGE1_DIR)/KRNLDR.SYS: $(STAGE1_DIR)/stage1.asm
 
 #Link the main kernel
 $(KERNEL_DIR)/KRNL.SYS: $(KERNEL_OBJS)
-	$(LD) -T $(KERNEL_DIR)/kernel.ld $(BUILD_DIR)/kernel/entry.asm.o \
-									 $(BUILD_DIR)/kernel/asm.asm.o \
-									 $(BUILD_DIR)/kernel/entry.cpp.o \
-									 $(BUILD_DIR)/kernel/DebugDisplay.cpp.o \
-									 $(BUILD_DIR)/kernel/main.cpp.o \
-									 $(BUILD_DIR)/kernel/string.cpp.o \
-									 -o $@
+	$(LD) -T $(KERNEL_DIR)/kernel.ld $(KERNEL_OBJS) -o $@
 
 #Build the kernel C++ sources
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) -I kernel/Include -c $< -o $@
+	$(CXX) -I $(KERNEL_DIR)/Lib/Include -I $(KERNEL_DIR)/include -c $< -o $@
 
 #Build the kernel asm sources
 $(BUILD_DIR)/%.asm.o: %.asm
 	@mkdir -p $(dir $@)
-	$(ASM) -f elf -i $(KERNEL_DIR)/ $< -o $@
+	$(ASM) -f elf -i $(KERNEL_ASM_SRC_DIR)/include/ $< -o $@
 
 .PHONY: clean
 
