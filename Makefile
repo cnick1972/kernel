@@ -14,6 +14,7 @@ KERNEL_LIB_DIR	:= $(KERNEL_DIR)/Lib
 KERNEL_LIB_SRC_DIR := $(KERNEL_LIB_DIR)/src
 KERNEL_LIB_SRCS := $(shell find $(KERNEL_LIB_SRC_DIR) -name '*.cpp')
 KERNEL_OBJS		:= $(KERNEL_ASM_SRCS:%=$(BUILD_DIR)/%.o) $(KERNEL_SRCS:%=$(BUILD_DIR)/%.o) $(KERNEL_LIB_SRCS:%=$(BUILD_DIR)/%.o)
+KERNEL_CONFIG_DIR := $(KERNEL_DIR)/config
 
 disk1.img: $(BOOTSECT_DIR)/bootsect.bin $(STAGE1_DIR)/KRNLDR.SYS $(KERNEL_DIR)/KRNL.SYS
 	@echo "[.......Creating Disk........]"
@@ -35,7 +36,7 @@ $(STAGE1_DIR)/KRNLDR.SYS: $(STAGE1_DIR)/stage1.asm
 
 #Link the main kernel
 $(KERNEL_DIR)/KRNL.SYS: $(KERNEL_OBJS)
-	$(LD) -T $(KERNEL_DIR)/kernel.ld $(KERNEL_OBJS) -o $@
+	$(LD) -T $(KERNEL_CONFIG_DIR)/kernel.ld $(KERNEL_OBJS) -o $@
 
 #Build the kernel C++ sources
 $(BUILD_DIR)/%.cpp.o: %.cpp
