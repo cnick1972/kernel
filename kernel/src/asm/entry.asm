@@ -10,10 +10,9 @@
 ;org	0x100000			; Kernel starts at 1 MB
 
 bits	32				; 32 bit code
-global _ProMode
+
 extern _kernel_entry
 
-_ProMode:
 
 	jmp	Entry				; jump to entry point
 

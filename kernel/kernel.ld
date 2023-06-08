@@ -1,6 +1,6 @@
 OUTPUT_FORMAT("binary")
 
-ENTRY(_ProMode)
+STARTUP(build/kernel/src/asm/entry.asm.o)
 
 SECTIONS
 {
