@@ -52,5 +52,6 @@ $(BUILD_DIR)/%.asm.o: %.asm
 clean:
 	rm -fv $(BOOTSECT_DIR)/bootsect.bin
 	rm -fv $(STAGE1_DIR)/KRNLDR.SYS
+	rm -fv $(KERNEL_DIR)/KRNL.SYS
 	rm -rfv $(BUILD_DIR)
 	rm -fv disk1.img
