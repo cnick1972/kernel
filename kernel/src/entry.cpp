@@ -1,3 +1,5 @@
+#include <crtdefs.h>
+
 extern "C"
 {
 

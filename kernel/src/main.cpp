@@ -4,8 +4,9 @@
 		-kernel startup code
 ======================================
 */
-
+#include <hal.h>
 #include "DebugDisplay.h"
+
 
 int main () {
 
@@ -32,6 +33,8 @@ int main () {
 	DebugGotoXY (4,16);
 	DebugSetColor (0x1F);
 	DebugPrintf ("\n\nI am preparing to load... Hold on, please... :)");
+
+//	geninterrupt(0xFF);
     return 0;
 
 }
