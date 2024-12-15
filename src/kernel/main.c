@@ -4,6 +4,7 @@
 #include <hal/hal.h>
 #include <arch/x86/io.h>
 #include <arch/x86/irq.h>
+#include <arch/x86/kybrd.h>
 #include "../libs/boot/bootparams.h"
 
 #include <cpuid.h>
@@ -28,22 +29,6 @@ void timer(Registers* regs)
 {
     //printf(".");
 }
-
-void keypressed(Registers* regs)
-{
-    unsigned char scancode;
-    scancode = x86_inb(0x60);
-    if(scancode & 0x80)
-    {
-
-    }
-    else
-    {
-        printf("Key Pressed %x\n", scancode);
-    }
-    
-}
-
 
 void crash_me();
 
@@ -76,7 +61,7 @@ void __attribute__((section(".entry"))) start(BootParams* bootParams)
     }
 
     x86_IRQ_RegisterHandler(0, timer);
-    x86_IRQ_RegisterHandler(1, keypressed);
+    kkbrd_install(1);
 
 end:
     for(;;);
