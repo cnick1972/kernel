@@ -34,7 +34,6 @@ x86_cpuid:
     mov al, 0
     ret
 
-
 global x86_Panic
 x86_Panic:
     cli

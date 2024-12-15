@@ -181,6 +181,9 @@ static int _kkybrd_scancode_std [] = {
 	KEY_F12			//0x58
 };
 
+//! invalid scan code. Used to indicate the last scan code is not to be reused
+const int INVALID_SCANCODE = 0;
+
 uint8_t kybrd_ctrl_read_status()
 {
     return x86_inb(KYBRD_CTRL_STATS_REG);
@@ -233,23 +236,50 @@ void x86_kybrd_irq(Registers* regs)
                 case KEY_RALT:
                     _alt = false;
                     break;
-
-                case KEY_CAPSLOCK:
-                    _capslock = (_capslock) ? false : true;
-                    kkybrd_set_leds(_numlock, _capslock, _scrolllock);
-                    break;
-
-                case KEY_KP_NUMLOCK:
-                    _numlock = (_numlock) ? false : true;
-                    kkybrd_set_leds(_numlock, _capslock, _scrolllock);
-                    break;
-
-                case KEY_SCROLLLOCK:
-                    _scrolllock = (_scrolllock) ? false : true;
-                    kkybrd_set_leds(_numlock, _capslock, _scrolllock);
-                    break;
                 }
             }
+			else {
+
+				//! this is a make code - set the scan code
+				_scancode = code;
+
+				//! grab the key
+				int key = _kkybrd_scancode_std [code];
+
+				//! test if user is holding down any special keys & set it
+				switch (key) {
+
+				case KEY_LCTRL:
+				case KEY_RCTRL:
+					_ctrl = true;
+					break;
+
+				case KEY_LSHIFT:
+				case KEY_RSHIFT:
+					_shift = true;
+					break;
+
+				case KEY_LALT:
+				case KEY_RALT:
+					_alt = true;
+					break;
+
+				case KEY_CAPSLOCK:
+					_capslock = (_capslock) ? false : true;
+					kkybrd_set_leds (_numlock, _capslock, _scrolllock);
+					break;
+
+				case KEY_KP_NUMLOCK:
+					_numlock = (_numlock) ? false : true;
+					kkybrd_set_leds (_numlock, _capslock, _scrolllock);
+					break;
+
+				case KEY_SCROLLLOCK:
+					_scrolllock = (_scrolllock) ? false : true;
+					kkybrd_set_leds (_numlock, _capslock, _scrolllock);
+					break;
+				}
+			}
         }
 		switch(code) {
 		case KYBRD_ERR_BAT_FAILED:
@@ -291,6 +321,21 @@ void kkybrd_set_leds(bool num, bool caps, bool scroll)
     kybrd_enc_send_cmd(data);
 }
 
+uint8_t	kkybrd_get_last_scan ()
+{
+	return 0;
+}
+
+enum KEYCODE kkybrd_get_last_key ()
+{
+	return (_scancode!=INVALID_SCANCODE) ? ((enum KEYCODE)_kkybrd_scancode_std [_scancode]) : (KEY_UNKNOWN);
+}
+
+void kkybrd_discard_last_key ()
+{
+	_scancode = INVALID_SCANCODE;
+}
+
 void kkbrd_install(int i)
 {
     x86_IRQ_RegisterHandler(1, x86_kybrd_irq);
@@ -303,5 +348,109 @@ void kkbrd_install(int i)
 	kkybrd_set_leds(_numlock, _capslock, _scrolllock);
 
 	_shift = _alt = _ctrl = false;
+}
+
+char kkybrd_key_to_ascii(enum KEYCODE code)
+{
+	uint8_t key = code;
+
+	//! insure key is an ascii character
+	if (isascii (key)) {
+
+		//! if shift key is down or caps lock is on, make the key uppercase
+		if (_shift || _capslock)
+			if (key >= 'a' && key <= 'z')
+				key -= 32;
+
+		if (_shift && !_capslock) {
+			if (key >= '0' && key <= '9') {
+				switch (key) {
+
+					case '0':
+						key = KEY_RIGHTPARENTHESIS;
+						break;
+					case '1':
+						key = KEY_EXCLAMATION;
+						break;
+					case '2':
+						key = KEY_AT;
+						break;
+					case '3':
+						key = KEY_EXCLAMATION;
+						break;
+					case '4':
+						key = KEY_HASH;
+						break;
+					case '5':
+						key = KEY_PERCENT;
+						break;
+					case '6':
+						key = KEY_CARRET;
+						break;
+					case '7':
+						key = KEY_AMPERSAND;
+						break;
+					case '8':
+						key = KEY_ASTERISK;
+						break;
+					case '9':
+						key = KEY_LEFTPARENTHESIS;
+						break;
+				}
+			}
+			else {
+
+				switch (key) {
+					case KEY_COMMA:
+						key = KEY_LESS;
+						break;
+
+					case KEY_DOT:
+						key = KEY_GREATER;
+						break;
+
+					case KEY_SLASH:
+						key = KEY_QUESTION;
+						break;
+
+					case KEY_SEMICOLON:
+						key = KEY_COLON;
+						break;
+
+					case KEY_QUOTE:
+						key = KEY_QUOTEDOUBLE;
+						break;
+
+					case KEY_LEFTBRACKET :
+						key = KEY_LEFTCURL;
+						break;
+
+					case KEY_RIGHTBRACKET :
+						key = KEY_RIGHTCURL;
+						break;
+
+					case KEY_GRAVE:
+						key = KEY_TILDE;
+						break;
+
+					case KEY_MINUS:
+						key = KEY_UNDERSCORE;
+						break;
+
+					case KEY_PLUS:
+						key = KEY_EQUAL;
+						break;
+
+					case KEY_BACKSLASH:
+						key = KEY_BAR;
+						break;
+				}
+			}
+		}
+		//! return the key
+		return key;
+	}
+	//! scan code != a valid ascii char so no convertion is possible
+	return 0;
 }
 

@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define isascii(c)	((unsigned)(c) <= 0x7F)
+
 enum KEYCODE {
 
 // Alphanumeric keys
@@ -161,4 +163,10 @@ enum KEYCODE {
 void kkbrd_install(int i);
 
 void kkybrd_set_leds (bool num, bool caps, bool scroll);
+
+uint8_t	kkybrd_get_last_scan ();
+enum KEYCODE kkybrd_get_last_key ();
+void kkybrd_discard_last_key ();
+
+char kkybrd_key_to_ascii(enum KEYCODE code);
 
