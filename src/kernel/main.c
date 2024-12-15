@@ -142,8 +142,6 @@ void __attribute__((section(".entry"))) start(BootParams* bootParams)
                                                                       bootParams->Memory.Regions[i].Length,
                                                                       bootParams->Memory.Regions[i].Type);
     }
-
-
     printf("\nPress any key to continue...\n");
     getch();
     clrscr();

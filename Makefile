@@ -3,7 +3,7 @@ LD := ld.lld
 ASM := nasm
 CFLAGS := -std=c99 -ffreestanding -nostdlib -c -I./src/kernel -I./src/libs
 CCFLAGS := -std=c99 -c -ffreestanding -target i686-none-elf -I./src/kernel -I./src/libs
-LINKFLAGS :=
+LINKFLAGS := -L. -nostdlib --oformat binary
 
 
 MODULES := stage1 stage2 kernel
@@ -36,7 +36,7 @@ $(BUILD_DIR)/main_floppy.img: $(BIN_FILES)
 
 $(BUILD_DIR)/kernel.bin: $(KERNEL_OBJS)
 	@echo "LD  " $@
-	@$(LD) -T $(KERNEL_DIR)/linker-lld.ld -Map=$(BUILD_DIR)/kernel.map -L. -nostdlib --oformat binary -o $@ $(KERNEL_OBJS) -lgcc
+	@$(LD) -T $(KERNEL_DIR)/linker.ld $(LINKFLAGS) -Map=$(BUILD_DIR)/kernel.map -o $@ $(KERNEL_OBJS) -lgcc
 
 $(BUILD_DIR)/stage1.bin: $(STAGE1_SRC)
 	@echo "ASM " $<
@@ -45,7 +45,7 @@ $(BUILD_DIR)/stage1.bin: $(STAGE1_SRC)
 
 $(BUILD_DIR)/stage2.bin: $(STAGE2_OBJS)
 	@echo "LD  " $@
-	@$(LD) -T $(STAGE2_DIR)/linker.ld -Map=$(BUILD_DIR)/stage2.map -L. -nostdlib --oformat binary -o $@ $(STAGE2_OBJS) -lgcc
+	@$(LD) -T $(STAGE2_DIR)/linker.ld $(LINKFLAGS) -Map=$(BUILD_DIR)/stage2.map -o $@ $(STAGE2_OBJS) -lgcc
 
 $(BUILD_DIR)/%.c.o: %.c
 	@echo "CC  " $<
