@@ -39,12 +39,19 @@ void __attribute__((section(".entry"))) start(BootParams* bootParams)
     clrscr();
 
     HAL_Initialize();
-    
-    model myModel;
-    get_model(&myModel);
+    x86_IRQ_RegisterHandler(0, timer);
+    kkbrd_install(1);
 
     char buffer[13];
-    memcpy(buffer, &myModel, 12);
+    
+    if(x86_cpuid()) {
+        model myModel;
+        get_model(&myModel);
+
+        memset(&buffer, 0, 13);
+        memcpy(buffer, &myModel, 12);
+    }
+
 
     printf("Welcome to the kernel\n");
     printf("CPU Model %s\n", buffer);
@@ -60,8 +67,8 @@ void __attribute__((section(".entry"))) start(BootParams* bootParams)
                                                                       bootParams->Memory.Regions[i].Type);
     }
 
-    x86_IRQ_RegisterHandler(0, timer);
-    kkbrd_install(1);
+
+    printf("\nPress any key to continue...\n");
 
 end:
     for(;;);

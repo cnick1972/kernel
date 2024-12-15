@@ -15,6 +15,26 @@ x86_inb:
     in al, dx
     ret
 
+global x86_cpuid
+x86_cpuid:
+    [bits 32]
+    pushfd
+    pushfd
+    xor dword [esp],0x00200000
+    popfd
+    pushfd
+    pop eax
+    xor eax, [esp]
+    popfd
+    and eax, 0x00200000
+    jz .unsupported
+    mov al, 1
+    ret
+.unsupported:
+    mov al, 0
+    ret
+
+
 global x86_Panic
 x86_Panic:
     cli

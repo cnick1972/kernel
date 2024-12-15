@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 enum KEYCODE {
 
@@ -158,4 +159,6 @@ enum KEYCODE {
 
 
 void kkbrd_install(int i);
+
+void kkybrd_set_leds (bool num, bool caps, bool scroll);
 

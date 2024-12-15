@@ -106,7 +106,7 @@ void putc(char c)
     if (g_ScreenY >= SCREEN_HEIGHT)
         scrollback(1);
 
-    // setcursor(g_ScreenX, g_ScreenY);
+    setcursor(g_ScreenX, g_ScreenY);
 }
 
 void puts(const char* str)
