@@ -22,7 +22,7 @@ KERNEL_OBJS := $(KERNEL_SRC:%=$(BUILD_DIR)/%.o)
 
 BOOTLOADER_STAGE1_SRC_DIR := src/bootloader/stage1
 
-BIN_FILES := $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/stage1.bin $(BUILD_DIR)/stage2.bin
+BIN_FILES := $(BUILD_DIR)/kernel.bin $(BUILD_DIR)/stage2.bin $(BUILD_DIR)/stage1.bin
 
 .PHONY: all clean
 

@@ -7,6 +7,7 @@
 #include <arch/x86/io.h>
 #include <arch/x86/irq.h>
 #include <arch/x86/kybrd.h>
+#include <arch/x86/floppy.h>
 #include "../libs/boot/bootparams.h"
 
 
@@ -118,6 +119,7 @@ void __attribute__((section(".entry"))) start(BootParams* bootParams)
     HAL_Initialize();
     x86_IRQ_RegisterHandler(0, timer);
     kkbrd_install(1);
+    fdInstall();
 
     char buffer[13] = "Unknown\0";
     
