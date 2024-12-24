@@ -58,3 +58,11 @@ $(BUILD_DIR)/%.asm.o: %.asm
 	@$(ASM) $< -f elf -o $@
 clean:
 	rm -rf build
+
+
+# must have elevated permissions
+disk:
+	dd if=/dev/zero of=$(BUILD_DIR)/hd.img bs=516096 count=1024
+	dd if=bootsect.bin of=$(BUILD_DIR)/hd.img conv=notrunc
+	dd if=$(BUILD_DIR)/stage1.bin of=$(BUILD_DIR)/hd.img seek=2048 conv=notrunc
+	
