@@ -28,46 +28,95 @@ section .boot
 
 global _start 
 _start:
+    ; we need a temp stack
+
+    mov esp, (stack_top - 0xc0000000)
+    push eax
+    push ebx
+
+    ; identity map the first page table (4 mb)
+
+    mov eax, (page_table_0 - 0xc0000000)
+    mov ebx, 0x0 | 3
+    mov ecx, 1024
+.loop:
+    mov dword [eax], ebx
+    add eax, 4
+    add ebx, 4096
+    loop .loop
+
+    ; map the 768 table to physiccal address 1MB
+
+    mov eax, (page_table_768 - 0xc0000000)
+    mov ebx, 0x100000 | 3
+    mov ecx, 1024
+.loop2:
+    mov dword [eax], ebx
+    add eax, 4
+    add ebx, 4096
+    loop .loop2
+
+    ; set up directory table
+
+    mov eax, (page_table_0 - 0xc0000000)
+    or eax, 3
+    mov dword [(initial_page_dir - 0xc0000000)], eax
+
+    mov eax, (page_table_768 - 0xc0000000)
+    or eax, 3
+    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], eax
+
     mov ecx, (initial_page_dir - 0xc0000000)
     mov cr3, ecx
 
-    mov ecx, cr4
-    or ecx, 0x10
-    mov cr4, ecx
+;   mov ecx, cr4
+;   or ecx, 0x10
+;   mov cr4, ecx
 
     mov ecx, cr0
     or ecx, 0x80000000
     mov cr0, ecx
 
+global test
+test:
+
+
+    pop ebx
+    pop eax
+
     jmp higher_half
 
 section .text
+global higher_half
 higher_half:
     mov esp, stack_top
     push ebx
     push eax
     xor ebp, ebp
 
+
     extern kmain
     call kmain
 
 halt:
-    halt
+    hlt
     jmp halt
-
-
 
 section .data
 align 4096
 global initial_page_dir
 initial_page_dir:
-    dd 10000011b
-    times 768 - 1 dd 0
+    times 1024 dd 0
 
-    dd (0 << 22) | 10000011b
-    dd (1 << 22) | 10000011b
-    dd (2 << 22) | 10000011b
-    dd (3 << 22) | 10000011b
-    times 256 - 4 dd 0
+align 4096
+global page_table_0
+page_table_0:
+    times 1024 dd 0
+
+align 4096
+global page_table_768
+page_table_768:
+    times 1024 dd 0
+
 
 

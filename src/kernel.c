@@ -15,6 +15,8 @@ void timer(Registers* regs)
     //printf(".");
 }
 
+static int j;
+
 
 void kmain(uint32_t eax, uint32_t ebx)
 {
@@ -39,7 +41,7 @@ void kmain(uint32_t eax, uint32_t ebx)
     }
     kprintf("The end 0x%08x\n", &__end);
 
-    int j = 33;
+    j = 33;
     kprintf("j is %d, at location 0x%08x\n", j, &j);
 
 end:
