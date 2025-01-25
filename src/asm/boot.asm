@@ -69,10 +69,6 @@ _start:
     mov ecx, (initial_page_dir - 0xc0000000)
     mov cr3, ecx
 
-;   mov ecx, cr4
-;   or ecx, 0x10
-;   mov cr4, ecx
-
     mov ecx, cr0
     or ecx, 0x80000000
     mov cr0, ecx
