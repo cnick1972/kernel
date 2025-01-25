@@ -9,3 +9,7 @@ This is a basic 32 bit x86 kernel...  It is designed to be a basic tutorilain ge
 - Cross-compiler version of binutils, and gcc
 - nasm
 - grub core
+
+## Building
+
+just run make, and if the prerequisted are satisfied you should end up with 'kernel.iso' in the base directory
