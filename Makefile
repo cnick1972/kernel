@@ -18,7 +18,7 @@ all: $(BUILDDIR)/kernel
 	cp (BUILDDIR)/kernel ./cnick/boot
 	grub-mkrescue -o kernel.iso ./cnick
 
-(BUILDDIR)/kernel: $(ASM_OBJS) $(C_OBJS)
+$(BUILDDIR)/kernel: $(ASM_OBJS) $(C_OBJS)
 	$(LD) -T ./src/linker.ld -Wl,-Map=$(BUILDDIR)/kernel.map -o $@ $(LDFLAGS) $(ASM_OBJS) $(C_OBJS)
 
 $(BUILDDIR)/%.c.o: %.c
