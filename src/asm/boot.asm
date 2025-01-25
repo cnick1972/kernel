@@ -73,10 +73,6 @@ _start:
     or ecx, 0x80000000
     mov cr0, ecx
 
-global test
-test:
-
-
     pop ebx
     pop eax
 

@@ -7,3 +7,8 @@ void StoreMultiboot(multiboot_info* mbi)
 {
     memcpy(&g_mbi, mbi, sizeof(multiboot_info));
 }
+
+multiboot_info* GetMultiboot()
+{
+    return &g_mbi;
+}

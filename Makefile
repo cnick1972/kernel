@@ -14,7 +14,9 @@ C_HEADERS	:= $(shell find $(SRCDIR) -name '*.h')
 C_OBJS 		:= $(C_SRC:%=$(BUILDDIR)/%.o)
 ASM_OBJS	:= $(ASM_SRC:%=$(BUILDDIR)/%.o)
 
-all: $(BUILDDIR)/kernel
+all: kernel.iso
+
+kernel.iso: $(BUILDDIR)/kernel
 	cp $(BUILDDIR)/kernel ./cnick/boot
 	grub-mkrescue -o kernel.iso ./cnick
 
@@ -35,3 +37,4 @@ $(BUILDDIR)/%.asm.o: %.asm
 
 clean:
 	rm -rf ./build
+	rm kernel.iso

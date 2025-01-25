@@ -102,5 +102,5 @@ typedef struct
     uint32_t type;
 } __attribute__((packed))  multiboot_mmap_entry;
 
-
+multiboot_info* GetMultiboot();
 void StoreMultiboot(multiboot_info* mbi);

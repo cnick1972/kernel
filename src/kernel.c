@@ -15,15 +15,12 @@ void timer(Registers* regs)
     //printf(".");
 }
 
-static int j;
-
-
 void kmain(uint32_t eax, uint32_t ebx)
 {
     multiboot_info* mbi = (multiboot_info*) ebx;
 
     StoreMultiboot(mbi);
-    init_memory(mbi);
+    init_memory(GetMultiboot());
 
     HAL_Initialize();
     x86_IRQ_RegisterHandler(0, timer);
@@ -39,10 +36,6 @@ void kmain(uint32_t eax, uint32_t ebx)
         kprintf("MEM: region=%d start=0x%08x length=0x%08x type=%d\n", i, 
                                                                         mmap[i].addr_low, mmap[i].len_low, mmap[i].type);
     }
-    kprintf("The end 0x%08x\n", &__end);
-
-    j = 33;
-    kprintf("j is %d, at location 0x%08x\n", j, &j);
 
 end:
     for(;;);    
