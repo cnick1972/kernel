@@ -15,7 +15,7 @@ C_OBJS 		:= $(C_SRC:%=$(BUILDDIR)/%.o)
 ASM_OBJS	:= $(ASM_SRC:%=$(BUILDDIR)/%.o)
 
 all: $(BUILDDIR)/kernel
-	cp (BUILDDIR)/kernel ./cnick/boot
+	cp $(BUILDDIR)/kernel ./cnick/boot
 	grub-mkrescue -o kernel.iso ./cnick
 
 $(BUILDDIR)/kernel: $(ASM_OBJS) $(C_OBJS)
