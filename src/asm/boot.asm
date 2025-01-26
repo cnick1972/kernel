@@ -30,13 +30,13 @@ global _start
 _start:
     ; we need a temp stack
 
-    mov esp, (stack_top - 0xc0000000)
+    mov esp, (stack_top - 0xbff00000)
     push eax
     push ebx
 
     ; identity map the first page table (4 mb)
 
-    mov eax, (page_table_0 - 0xc0000000)
+    mov eax, (page_table_0 - 0xbff00000)
     mov ebx, 0x0 | 3
     mov ecx, 1024
 .loop:
@@ -45,9 +45,9 @@ _start:
     add ebx, 4096
     loop .loop
 
-    ; map the 768 table to physiccal address 1MB
+    ; map the 768 table to physical address 1MB
 
-    mov eax, (page_table_768 - 0xc0000000)
+    mov eax, (page_table_768 - 0xbff00000)
     mov ebx, 0x100000 | 3
     mov ecx, 1024
 .loop2:
@@ -56,18 +56,34 @@ _start:
     add ebx, 4096
     loop .loop2
 
+    ; map the 769 table to the frame buffer address 0xb8000
+
+    mov eax, (page_table_769 - 0xbff00000)
+    mov ebx, 0x0 | 3
+    mov ecx, 1024
+.loop3:
+    mov dword [eax], ebx
+    add eax, 4
+    add ebx, 4096
+    loop .loop3
+
     ; set up directory table
 
-    mov eax, (page_table_0 - 0xc0000000)
+    mov eax, (page_table_0 - 0xbff00000)
     or eax, 3
-    mov dword [(initial_page_dir - 0xc0000000)], eax
+    mov dword [(initial_page_dir - 0xbff00000)], eax
 
-    mov eax, (page_table_768 - 0xc0000000)
+    mov eax, (page_table_768 - 0xbff00000)
     or eax, 3
-    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], eax
+    mov dword [(initial_page_dir - 0xbff00000) + (768 * 4)], eax
 
-    mov ecx, (initial_page_dir - 0xc0000000)
+    mov eax, (page_table_769 - 0xbff00000)
+    or eax, 3
+    mov dword [(initial_page_dir - 0xbff00000) + (769 * 4)], eax
+
+    mov ecx, (initial_page_dir - 0xbff00000)
     mov cr3, ecx
+
 
     mov ecx, cr0
     or ecx, 0x80000000
@@ -81,6 +97,13 @@ _start:
 section .text
 global higher_half
 higher_half:
+
+    ; indentity page should no longer be required, but I will need to map the frame buffer if I remove it.
+
+;    mov dword [initial_page_dir], 0
+;    invlpg [0]
+;    add ebx, 0xc0410000
+
     mov esp, stack_top
     push ebx
     push eax
@@ -108,6 +131,11 @@ page_table_0:
 align 4096
 global page_table_768
 page_table_768:
+    times 1024 dd 0
+
+align 4096
+global page_table_769
+page_table_769:
     times 1024 dd 0
 
 

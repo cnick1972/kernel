@@ -8,7 +8,7 @@ uint32_t g_mmap_count;
 void init_memory(multiboot_info* mbi)
 {
     g_mmap_count = mbi->mmap_length / sizeof(multiboot_mmap_entry);
-    memcpy(g_mmap, (uint32_t*)mbi->mmap_addr, mbi->mmap_length);
+    memcpy(g_mmap, (uint32_t*)(mbi->mmap_addr), mbi->mmap_length);
 }
 
 uint32_t get_mmap_count()

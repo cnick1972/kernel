@@ -14,13 +14,15 @@ C_HEADERS	:= $(shell find $(SRCDIR) -name '*.h')
 C_OBJS 		:= $(C_SRC:%=$(BUILDDIR)/%.o)
 ASM_OBJS	:= $(ASM_SRC:%=$(BUILDDIR)/%.o)
 
-all: kernel.iso
+all: $(BUILDDIR)/kernel.iso
 
-kernel.iso: $(BUILDDIR)/kernel
-	cp $(BUILDDIR)/kernel ./cnick/boot
-	grub-mkrescue -o kernel.iso ./cnick
+$(BUILDDIR)/kernel.iso: $(BUILDDIR)/kernel.bin
+	mkdir -p $(BUILDDIR)/kernel/boot/grub
+	cp $(SRCDIR)/grub/grub.cfg $(BUILDDIR)/kernel/boot/grub
+	cp $(BUILDDIR)/kernel.bin $(BUILDDIR)/kernel/boot
+	grub-mkrescue -o $(BUILDDIR)/kernel.iso $(BUILDDIR)/kernel/
 
-$(BUILDDIR)/kernel: $(ASM_OBJS) $(C_OBJS)
+$(BUILDDIR)/kernel.bin: $(ASM_OBJS) $(C_OBJS)
 	$(LD) -T ./src/linker.ld -Wl,-Map=$(BUILDDIR)/kernel.map -o $@ $(LDFLAGS) $(ASM_OBJS) $(C_OBJS)
 
 $(BUILDDIR)/%.c.o: %.c
@@ -37,4 +39,4 @@ $(BUILDDIR)/%.asm.o: %.asm
 
 clean:
 	rm -rf ./build
-	rm kernel.iso
+	rm -rf kernel.iso
