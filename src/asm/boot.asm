@@ -100,9 +100,9 @@ higher_half:
 
     ; indentity page should no longer be required, but I will need to map the frame buffer if I remove it.
 
-;    mov dword [initial_page_dir], 0
-;    invlpg [0]
-;    add ebx, 0xc0410000
+    mov dword [initial_page_dir], 0
+    invlpg [0]
+    add ebx, 0xc0400000
 
     mov esp, stack_top
     push ebx

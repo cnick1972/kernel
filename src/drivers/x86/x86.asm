@@ -61,3 +61,11 @@ global x86_DisableInterrupts
 x86_DisableInterrupts:
     cli
     ret
+
+
+;void        ASMCALL x86_InvalidatePage(uint8_t page)
+global x86_InvalidatePage
+x86_InvalidatePage:
+    mov eax, [esp + 4]
+    invlpg [eax]
+    ret

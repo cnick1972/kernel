@@ -15,6 +15,8 @@ uint32_t    ASMCALL x86_inl(uint16_t port);
 
 void        ASMCALL x86_Panic();
 
+void        ASMCALL x86_InvalidatePage(uint8_t page);
+
 uint8_t     ASMCALL x86_EnableInterrupts();
 uint8_t     ASMCALL x86_DisableInterrupts();
 
