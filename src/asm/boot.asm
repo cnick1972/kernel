@@ -24,19 +24,19 @@ stack_bottom:
     resb 16384
 stack_top:
 
-section .boot   
+section .text   
 
 global _start 
 _start:
     ; we need a temp stack
 
-    mov esp, (stack_top - 0xbff00000)
+    mov esp, (stack_top - 0xc0000000)
     push eax
     push ebx
 
     ; identity map the first page table (4 mb)
 
-    mov eax, (page_table_0 - 0xbff00000)
+    mov eax, (page_table_0 - 0xc0000000)
     mov ebx, 0x0 | 3
     mov ecx, 1024
 .loop:
@@ -47,8 +47,8 @@ _start:
 
     ; map the 768 table to physical address 1MB
 
-    mov eax, (page_table_768 - 0xbff00000)
-    mov ebx, 0x100000 | 3
+    mov eax, (page_table_768 - 0xc0000000)
+    mov ebx, 0x000000 | 3
     mov ecx, 1024
 .loop2:
     mov dword [eax], ebx
@@ -58,7 +58,7 @@ _start:
 
     ; map the 769 table to the frame buffer address 0xb8000
 
-    mov eax, (page_table_769 - 0xbff00000)
+    mov eax, (page_table_769 - 0xc0000000)
     mov ebx, 0x0 | 3
     mov ecx, 1024
 .loop3:
@@ -69,19 +69,19 @@ _start:
 
     ; set up directory table
 
-    mov eax, (page_table_0 - 0xbff00000)
+    mov eax, (page_table_0 - 0xc0000000)
     or eax, 3
-    mov dword [(initial_page_dir - 0xbff00000)], eax
+    mov dword [(initial_page_dir - 0xc0000000)], eax
 
-    mov eax, (page_table_768 - 0xbff00000)
+    mov eax, (page_table_768 - 0xc0000000)
     or eax, 3
-    mov dword [(initial_page_dir - 0xbff00000) + (768 * 4)], eax
+    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], eax
 
-    mov eax, (page_table_769 - 0xbff00000)
+    mov eax, (page_table_769 - 0xc0000000)
     or eax, 3
-    mov dword [(initial_page_dir - 0xbff00000) + (769 * 4)], eax
+    mov dword [(initial_page_dir - 0xc0000000) + (769 * 4)], eax
 
-    mov ecx, (initial_page_dir - 0xbff00000)
+    mov ecx, (initial_page_dir - 0xc0000000)
     mov cr3, ecx
 
 
@@ -92,19 +92,19 @@ _start:
     pop ebx
     pop eax
 
-    jmp higher_half
+    lea ecx, higher_half
+    jmp ecx
 
 section .text
 global higher_half
 higher_half:
-
     ; indentity page should no longer be required, but I will need to map the frame buffer if I remove it.
 
     mov dword [initial_page_dir], 0
     invlpg [0]
-    add ebx, 0xc0400000
-
     mov esp, stack_top
+
+    add ebx, 0xc0000000
     push ebx
     push eax
     xor ebp, ebp
