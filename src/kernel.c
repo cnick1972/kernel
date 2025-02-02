@@ -3,6 +3,7 @@
 
 #include <multiboot.h>
 #include <memory.h>
+#include <meminit.h>
 #include <hal.h>
 #include <isr.h>
 #include <irq.h>
