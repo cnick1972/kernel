@@ -13,7 +13,7 @@
 
 void timer(Registers* regs)
 {
-    kprintf(".");
+//    kprintf(".");
 }
 
 void keyboard(Registers* regs)
