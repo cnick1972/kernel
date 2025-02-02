@@ -6,6 +6,8 @@ MBFLAGS  equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
 MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
 CHECKSUM equ -(MAGIC + MBFLAGS)   ; checksum of above, to prove we are multiboot
 
+KERNEL_VIRTUAL_BASE equ 0xC0000000
+
 section .multiboot
 align 4
     dd MAGIC
@@ -34,16 +36,19 @@ _start:
     push eax
     push ebx
 
+    global PageDirectoryPhysicalAddress
+    PageDirectoryPhysicalAddress equ (physical_memory_bitmap - KERNEL_VIRTUAL_BASE)
+
     ; identity map the first page table (4 mb)
     ; update page directory page 0 to point to first 4Mb
 
-    mov dword [(initial_page_dir - 0xc0000000)], 0x00000083
+    mov dword [(PageDirectoryVirtualAddress - 0xc0000000)], 0x00000083
 
     ;  create a page directory entry point 0xc0000000 at 0x0
-    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], 0x00000083
+    mov dword [(PageDirectoryVirtualAddress - 0xc0000000) + (768 * 4)], 0x00000083
 
     ; move address of initial_page_dir to the cr3 register
-    mov ecx, (initial_page_dir - 0xc0000000)
+    mov ecx, (PageDirectoryVirtualAddress - 0xc0000000)
     mov cr3, ecx
 
     ; enable PSE so we can use 4MB pages
@@ -69,7 +74,7 @@ global higher_half
 higher_half:
     ; indentity page should no longer be required, but I will need to map the frame buffer if I remove it.
 
-    mov dword [initial_page_dir], 0
+    mov dword [PageDirectoryVirtualAddress], 0
     invlpg [0]
 
     ; correctly re-enable the stack to use virtual addressing
@@ -89,9 +94,14 @@ halt:
 
 section .data
 align 4096
-global initial_page_dir
-initial_page_dir:
+global PageDirectoryVirtualAddress
+PageDirectoryVirtualAddress:
     times 1024 dd 0
+
+section .pmm
+global physical_memory_bitmap
+physical_memory_bitmap:
+    times 0x20000 db 0x00
 
 
 
