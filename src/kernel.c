@@ -17,6 +17,7 @@ void timer(Registers* regs)
 
 void kmain(uint32_t eax, uint32_t ebx)
 {
+
     kclrscr();
     multiboot_info* mbi = (multiboot_info*) ebx;
 

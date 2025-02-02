@@ -35,56 +35,23 @@ _start:
     push ebx
 
     ; identity map the first page table (4 mb)
+    ; update page directory page 0 to point to first 4Mb
 
-    mov eax, (page_table_0 - 0xc0000000)
-    mov ebx, 0x0 | 3
-    mov ecx, 1024
-.loop:
-    mov dword [eax], ebx
-    add eax, 4
-    add ebx, 4096
-    loop .loop
+    mov dword [(initial_page_dir - 0xc0000000)], 0x00000083
 
-    ; map the 768 table to physical address 1MB
+    ;  create a page directory entry point 0xc0000000 at 0x0
+    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], 0x00000083
 
-    mov eax, (page_table_768 - 0xc0000000)
-    mov ebx, 0x000000 | 3
-    mov ecx, 1024
-.loop2:
-    mov dword [eax], ebx
-    add eax, 4
-    add ebx, 4096
-    loop .loop2
-
-    ; map the 769 table to the frame buffer address 0xb8000
-
-    mov eax, (page_table_769 - 0xc0000000)
-    mov ebx, 0x0 | 3
-    mov ecx, 1024
-.loop3:
-    mov dword [eax], ebx
-    add eax, 4
-    add ebx, 4096
-    loop .loop3
-
-    ; set up directory table
-
-    mov eax, (page_table_0 - 0xc0000000)
-    or eax, 3
-    mov dword [(initial_page_dir - 0xc0000000)], eax
-
-    mov eax, (page_table_768 - 0xc0000000)
-    or eax, 3
-    mov dword [(initial_page_dir - 0xc0000000) + (768 * 4)], eax
-
-    mov eax, (page_table_769 - 0xc0000000)
-    or eax, 3
-    mov dword [(initial_page_dir - 0xc0000000) + (769 * 4)], eax
-
+    ; move address of initial_page_dir to the cr3 register
     mov ecx, (initial_page_dir - 0xc0000000)
     mov cr3, ecx
 
+    ; enable PSE so we can use 4MB pages
+    mov ecx, cr4
+    or ecx, 0x00000010
+    mov cr4, ecx
 
+    ; enable paging
     mov ecx, cr0
     or ecx, 0x80000000
     mov cr0, ecx
@@ -92,8 +59,10 @@ _start:
     pop ebx
     pop eax
 
+    ; jump to highr half
     lea ecx, higher_half
     jmp ecx
+
 
 section .text
 global higher_half
@@ -102,13 +71,14 @@ higher_half:
 
     mov dword [initial_page_dir], 0
     invlpg [0]
+
+    ; correctly re-enable the stack to use virtual addressing
     mov esp, stack_top
 
     add ebx, 0xc0000000
     push ebx
     push eax
     xor ebp, ebp
-
 
     extern kmain
     call kmain
@@ -123,20 +93,6 @@ global initial_page_dir
 initial_page_dir:
     times 1024 dd 0
 
-align 4096
-global page_table_0
-page_table_0:
-    times 1024 dd 0
-
-align 4096
-global page_table_768
-page_table_768:
-    times 1024 dd 0
-
-align 4096
-global page_table_769
-page_table_769:
-    times 1024 dd 0
 
 
 

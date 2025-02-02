@@ -5,7 +5,7 @@ const unsigned SCREEN_WIDTH = 80;
 const unsigned SCREEN_HEIGHT = 25;
 const uint8_t DEFAULT_COLOR = 0x17;
 
-uint8_t* g_ScreenBuffer = (uint8_t*)0xc04b8000;
+uint8_t* g_ScreenBuffer = (uint8_t*)0xc00b8000;
 int g_ScreenX = 0, g_ScreenY = 0;
 
 
