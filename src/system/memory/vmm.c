@@ -101,3 +101,17 @@ page_directory_t initialize_kernel_page_directory()
 
     return pd;
 }
+
+uint32_t num_present_pages(page_directory_t pd)
+{
+    uint32_t num = 0;
+    for(int i = 0; i < 1024; i++) {
+        uint32_t entry = pd[i];
+        bool present = entry & 0x1;
+
+        if(present) {
+            num++;
+        }
+    }
+    return num;
+}

@@ -69,3 +69,14 @@ x86_InvalidatePage:
     mov eax, [esp + 4]
     invlpg [eax]
     ret
+
+
+;void        ASMCALL x86_ReloadPageDirectory();
+global x86_ReloadPageDirectory
+x86_ReloadPageDirectory:
+    cli
+    mov eax, cr3
+    hlt
+    mov cr3, eax
+    sti
+    ret

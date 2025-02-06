@@ -46,7 +46,11 @@ void kmain(uint32_t eax, uint32_t ebx)
     }
 
     init_pmm_allocator(mbi->mem_upper + 1024);
-    initialize_kernel_page_directory();
+    page_directory_t pd = initialize_kernel_page_directory();
+    kprintf("Address of page directory: 0x%08x\n", pd);
+    kprintf("%i present pages\n", num_present_pages(pd));
+ //   x86_ReloadPageDirectory();
+
 
     int test;
 

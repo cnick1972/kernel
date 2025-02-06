@@ -25,3 +25,4 @@ void* allocate_physical_page();
 
 
 page_directory_t initialize_kernel_page_directory();
+uint32_t num_present_pages(page_directory_t pd);
