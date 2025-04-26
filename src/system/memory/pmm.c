@@ -145,7 +145,6 @@ uint32_t init_pmm_allocator(uint32_t memsize)
 
 void* allocate_physical_page()
 {
-    kprintf("here\n");
     for(uint32_t index = 0; index < bitmapsize; index++)
     {
         if(pmm_bitmap[index] != 0)

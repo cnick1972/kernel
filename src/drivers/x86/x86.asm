@@ -76,7 +76,6 @@ global x86_ReloadPageDirectory
 x86_ReloadPageDirectory:
     cli
     mov eax, cr3
-    hlt
     mov cr3, eax
     sti
     ret

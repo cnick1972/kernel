@@ -38,7 +38,7 @@ uint32_t make_page_table_entry(void* physical_address,
                             enum page_permissions_t permissions,
                             bool present)
 {
-    uint32_t entry = (uint32_t) physical_address;
+    uint32_t entry = (uint32_t) physical_address; //(uint32_t) physical_address;
     entry |= global << 8;
     entry |= cache_disabled << 4;
     entry |= write_through << 3;
@@ -67,6 +67,10 @@ page_directory_t initialize_kernel_page_directory()
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
 
+
+    kprintf("Page Directory Virtual Address: 0x%08x\n", pd);
+    kprintf("Page Directory Physical Address: 0x%08x\n", (void*) &PageDirectoryPhysicalAddress);
+
     uint32_t pde = make_page_directory_entry((void*) &PageDirectoryPhysicalAddress, 
                                              FOUR_KB, 
                                              false, 
@@ -78,7 +82,12 @@ page_directory_t initialize_kernel_page_directory()
     pd[1023] = pde;
 
     void* page_table_physical_address = allocate_physical_page();
-    pd[KERNEL_PAGE_TABLE_NUMBER] = make_page_directory_entry(page_table_physical_address, 
+
+    kprintf("Page Table Physical Address: 0x%08x\n", (void*) page_table_physical_address);
+
+    
+
+    uint32_t pde2 = make_page_directory_entry((void*) page_table_physical_address, 
                                                              FOUR_KB, 
                                                              false, 
                                                              false, 
@@ -86,6 +95,12 @@ page_directory_t initialize_kernel_page_directory()
                                                              READ_WRITE, 
                                                              true);
 
+
+   
+    pd[KERNEL_PAGE_TABLE_NUMBER] = pde2;
+
+    kprintf("Page address: 0x%08x\n", pde2);
+                                                             
     page_table_t pt = (page_table_t) page_table_virtual_address(KERNEL_PAGE_TABLE_NUMBER);
     for(uint16_t i = 0; i < 1024; i++)
     {
@@ -110,6 +125,7 @@ uint32_t num_present_pages(page_directory_t pd)
         bool present = entry & 0x1;
 
         if(present) {
+            kprintf("Page Directory Entry %d: 0x%08x\n", i, entry);
             num++;
         }
     }

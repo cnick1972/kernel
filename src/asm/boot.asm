@@ -37,7 +37,7 @@ _start:
     push ebx
 
     global PageDirectoryPhysicalAddress
-    PageDirectoryPhysicalAddress equ (physical_memory_bitmap - KERNEL_VIRTUAL_BASE)
+    PageDirectoryPhysicalAddress equ (PageDirectoryVirtualAddress - KERNEL_VIRTUAL_BASE)
 
     ; identity map the first page table (4 mb)
     ; update page directory page 0 to point to first 4Mb

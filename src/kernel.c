@@ -13,7 +13,7 @@
 
 void timer(Registers* regs)
 {
-//    kprintf(".");
+    kprintf(".");
 }
 
 void keyboard(Registers* regs)
@@ -33,6 +33,8 @@ void kmain(uint32_t eax, uint32_t ebx)
     init_memory(GetMultiboot());
 
     HAL_Initialize();
+    x86_IRQ_RegisterHandler(0, timer);
+    x86_IRQ_RegisterHandler(1, keyboard);
 
 
     multiboot_mmap_entry* mmap;
@@ -49,14 +51,8 @@ void kmain(uint32_t eax, uint32_t ebx)
     page_directory_t pd = initialize_kernel_page_directory();
     kprintf("Address of page directory: 0x%08x\n", pd);
     kprintf("%i present pages\n", num_present_pages(pd));
- //   x86_ReloadPageDirectory();
+    x86_ReloadPageDirectory();
 
-
-    int test;
-
-    kprintf("test: 0x%08x\n", &test);
-    x86_IRQ_RegisterHandler(0, timer);
-    x86_IRQ_RegisterHandler(1, keyboard);
 
 end:
     for(;;);    

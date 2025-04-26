@@ -22,6 +22,8 @@ multiboot_mmap_entry* get_mmap();
 
 uint32_t init_pmm_allocator(uint32_t memsize);
 void* allocate_physical_page();
+void mark_unavailable(uint32_t page_number);
+void mark_free(uint32_t page_number) ;
 
 
 page_directory_t initialize_kernel_page_directory();

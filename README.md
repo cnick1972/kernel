@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a basic 32 bit x86 kernel.  It is designed to be a basic tutorilain getting a x86 to boot into protected mode with paging and virtual memory.  Eventually it will run in user mode woth basic applications
+This is a basic 32 bit x86 kernel.  It is designed to be a basic tutorilain getting a x86 to boot into protected mode with paging and virtual memory.  Eventually it will run in user mode with basic applications
 
 ## Prerequistes
 
