@@ -9,11 +9,9 @@
 #include <irq.h>
 #include <x86.h>
 
-
-
 void timer(Registers* regs)
 {
-    kprintf(".");
+    //kprintf(".");
 }
 
 void keyboard(Registers* regs)
@@ -36,7 +34,6 @@ void kmain(uint32_t eax, uint32_t ebx)
     x86_IRQ_RegisterHandler(0, timer);
     x86_IRQ_RegisterHandler(1, keyboard);
 
-
     multiboot_mmap_entry* mmap;
 
     mmap = get_mmap();
@@ -52,7 +49,6 @@ void kmain(uint32_t eax, uint32_t ebx)
     kprintf("Address of page directory: 0x%08x\n", pd);
     kprintf("%i present pages\n", num_present_pages(pd));
     x86_ReloadPageDirectory();
-
 
 end:
     for(;;);    
