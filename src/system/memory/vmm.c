@@ -1,6 +1,9 @@
 #include <meminit.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <isr.h>
+#include <x86.h>
+
 
 #define KERNEL_PAGE_TABLE_NUMBER 768
 #define PAGE_OFFSET_BITS 12
@@ -131,3 +134,43 @@ uint32_t num_present_pages(page_directory_t pd)
     }
     return num;
 }
+
+void PageFaulthandler(Registers* regs)
+{
+    page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
+
+    // do i have a page directory entry for the memory requested?
+
+    uint32_t pde = regs->eax / 1024 / 4096;
+
+    kprintf("PDE: %d\n", pde);
+    if(!get_present_from_pde(pde))
+    {
+        kprintf("Not present\n");
+        // allocate a memory block for the required pde
+        void* newPage = allocate_physical_page();
+        uint32_t pde2 = make_page_directory_entry((void*) newPage, 
+                        FOUR_KB, 
+                        false, 
+                        false, 
+                        SUPERVISOR, 
+                        READ_WRITE, 
+                        true);
+
+        pd[pde] = pde2;
+        uint32_t tbentry = (regs->eax >> 12) & 0x3ff;
+        // create the new memory for the require page
+        newPage = allocate_physical_page();
+        page_table_t pt = (page_table_t) page_table_virtual_address(pde);
+        pt[tbentry] = make_page_table_entry(newPage, 
+            false, 
+            false, 
+            false, 
+            SUPERVISOR, 
+            READ_WRITE, 
+            true);
+    }
+    
+//    x86_Panic();
+}
+

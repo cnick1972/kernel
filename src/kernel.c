@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <keyboard.h>
 #include <multiboot.h>
 #include <memory.h>
 #include <meminit.h>
@@ -12,11 +13,6 @@
 void timer(Registers* regs)
 {
     //kprintf(".");
-}
-
-void keyboard(Registers* regs)
-{
-    kprintf("keyboard\n");
 }
 
 void kmain(uint32_t eax, uint32_t ebx)
@@ -32,7 +28,8 @@ void kmain(uint32_t eax, uint32_t ebx)
 
     HAL_Initialize();
     x86_IRQ_RegisterHandler(0, timer);
-    x86_IRQ_RegisterHandler(1, keyboard);
+    x86_IRQ_RegisterHandler(1, keyb_int_handler);
+    x86_ISR_RegisterHandler(14, PageFaulthandler);
 
     multiboot_mmap_entry* mmap;
 
@@ -52,5 +49,4 @@ void kmain(uint32_t eax, uint32_t ebx)
 
 end:
     for(;;);    
-
 }
