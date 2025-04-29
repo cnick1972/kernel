@@ -17,23 +17,23 @@ ASM_OBJS	:= $(ASM_SRC:%=$(BUILDDIR)/%.o)
 all: $(BUILDDIR)/kernel.iso
 
 $(BUILDDIR)/kernel.iso: $(BUILDDIR)/kernel.bin
-	mkdir -p $(BUILDDIR)/kernel/boot/grub
-	cp $(SRCDIR)/grub/grub.cfg $(BUILDDIR)/kernel/boot/grub
-	cp $(BUILDDIR)/kernel.bin $(BUILDDIR)/kernel/boot
-	grub-mkrescue -o $(BUILDDIR)/kernel.iso $(BUILDDIR)/kernel/
+	@mkdir -p $(BUILDDIR)/kernel/boot/grub
+	@cp $(SRCDIR)/grub/grub.cfg $(BUILDDIR)/kernel/boot/grub
+	@cp $(BUILDDIR)/kernel.bin $(BUILDDIR)/kernel/boot
+	@grub-mkrescue -o $(BUILDDIR)/kernel.iso $(BUILDDIR)/kernel/
 
 $(BUILDDIR)/kernel.bin: $(ASM_OBJS) $(C_OBJS)
 	$(LD) -T ./src/linker.ld -Wl,-Map=$(BUILDDIR)/kernel.map -o $@ $(LDFLAGS) $(ASM_OBJS) $(C_OBJS)
 
 $(BUILDDIR)/%.c.o: %.c
-#	@echo "CC  " $<
+	@echo "CC  " $<
 	@mkdir -p $(dir $@)
-	$(CC) $(CCFLAGS) -o $@ $<
+	@$(CC) $(CCFLAGS) -o $@ $<
 
 $(BUILDDIR)/%.asm.o: %.asm
-#	@echo "ASM " $<
+	@echo "ASM " $<
 	@mkdir -p $(dir $@)
-	$(AS) $< -f elf32 -I./src/include/asm -o $@
+	@$(AS) -f elf32 -I./src/include/asm -o $@ $<
 
 .PHONY: all clean
 

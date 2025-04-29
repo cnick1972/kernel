@@ -38,14 +38,27 @@ void kmain(uint32_t eax, uint32_t ebx)
     for(int i = 0; i < mmap_count; i++)
     {
         kprintf("MEM: region=%d start=0x%08x length=0x%08x type=%d\n", i, 
-                                                                        mmap[i].addr_low, mmap[i].len_low, mmap[i].type);
+                    mmap[i].addr_low, mmap[i].len_low, mmap[i].type);
     }
 
     init_pmm_allocator(mbi->mem_upper + 1024);
     page_directory_t pd = initialize_kernel_page_directory();
-    kprintf("Address of page directory: 0x%08x\n", pd);
-    kprintf("%i present pages\n", num_present_pages(pd));
     x86_ReloadPageDirectory();
+    char* ptr = kmalloc(9);
+
+    kprintf("ptr location: 0x%08x\n", ptr);
+   
+    char* ptr2;
+    kprintf("ptr2 location: 0x%08x\n", ptr2);
+    ptr2 = kmalloc(24);
+    kprintf("ptr2 location: 0x%08x\n", ptr2);
+
+    debug_heap();
+
+    kfree(ptr2);
+
+    kprintf("ptr2 location: 0x%08x\n", ptr2);
+    
 
 end:
     for(;;);    
