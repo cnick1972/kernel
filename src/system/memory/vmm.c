@@ -158,5 +158,50 @@ void PageFaulthandler(Registers* regs)
         }
     }
     x86_ReloadPageDirectory();
+
+}
+
+bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
+{
+    page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
+    
+    // This procedure will map a physical address to a virtual address
+    // Step 1 - Check is the requested virtual address is available
+    // Step 1.1 see if there is a page directory for the request virtual address
+
+    uint32_t directoryEntry = (uint32_t)vAddress / 1024 / 4096;
+
+    if(!get_present_from_pde(pd[directoryEntry]))
+    {
+        void* newPage = allocate_physical_page();
+        uint32_t pde = make_page_directory_entry((void*) newPage, 
+                                FOUR_KB, 
+                                false, 
+                                false, 
+                                SUPERVISOR, 
+                                READ_WRITE, 
+                                true);
+
+        pd[directoryEntry] = pde;
+
+        page_table_t pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        uint32_t tbentry = ((uint32_t)vAddress >> 12) & 0x3ff;
+    
+        if(!get_present_from_pte(pt[tbentry]))
+        {
+            pt[tbentry] = make_page_table_entry(pAddress, 
+                            false, 
+                            false, 
+                            false, 
+                            SUPERVISOR, 
+                            READ_WRITE, 
+                            true);
+        }
+    }
+    x86_ReloadPageDirectory();
+
+
+    return false;
+
 }
 

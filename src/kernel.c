@@ -9,6 +9,7 @@
 #include <isr.h>
 #include <irq.h>
 #include <x86.h>
+#include <acpi.h>
 
 void timer(Registers* regs)
 {
@@ -44,21 +45,10 @@ void kmain(uint32_t eax, uint32_t ebx)
     init_pmm_allocator(mbi->mem_upper + 1024);
     page_directory_t pd = initialize_kernel_page_directory();
     x86_ReloadPageDirectory();
-    char* ptr = kmalloc(9);
 
-    kprintf("ptr location: 0x%08x\n", ptr);
-   
-    char* ptr2;
-    kprintf("ptr2 location: 0x%08x\n", ptr2);
-    ptr2 = kmalloc(24);
-    kprintf("ptr2 location: 0x%08x\n", ptr2);
+    uint32_t* ptr = 0; 
+    ptr = (uint32_t*)find_rsdp();
 
-    debug_heap();
-
-    kfree(ptr2);
-
-    kprintf("ptr2 location: 0x%08x\n", ptr2);
-    
 
 end:
     for(;;);    

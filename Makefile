@@ -2,7 +2,7 @@ CC := i386-elf-gcc
 LD := i386-elf-gcc
 AS := nasm
 
-CCFLAGS := -std=c99 -c -ffreestanding -I./src/libk/include -I./src/include
+CCFLAGS := -std=c99 -O2 -c -ffreestanding -I./src/libk/include -I./src/include
 LDFLAGS := -ffreestanding -O2 -nostdlib -lgcc
 
 BUILDDIR 	:= ./build
