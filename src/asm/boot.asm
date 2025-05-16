@@ -2,7 +2,8 @@
 
 MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
 MEMINFO  equ  1 << 1            ; provide memory map
-MBFLAGS  equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
+VIDEO    equ  1 << 2            ; set video mode
+MBFLAGS  equ  MBALIGN | MEMINFO | VIDEO; this is the Multiboot 'flag' field
 MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
 CHECKSUM equ -(MAGIC + MBFLAGS)   ; checksum of above, to prove we are multiboot
 
@@ -16,8 +17,8 @@ align 4
     dd 0, 0, 0, 0, 0
 
     dd 0
-    dd 800
-    dd 600
+    dd 1680
+    dd 1050
     dd 32
 
 section .bss

@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-
 void kputc(const char c);
 void kputs(const char* str);
-int kprintf(const char* fmt, ...);
+int  vsprintf(char *buf, const char *fmt, va_list args);
+int  kprintf(const char* fmt, ...);
 void kclrscr();

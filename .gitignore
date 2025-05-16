@@ -2,5 +2,6 @@
 build
 kernel.iso
 image
+machine.log
 
 

@@ -21,4 +21,6 @@ void        ASMCALL x86_ReloadPageDirectory();
 uint8_t     ASMCALL x86_EnableInterrupts();
 uint8_t     ASMCALL x86_DisableInterrupts();
 
+uint32_t    ASMCALL x86_CR2_register();
+
 void x86_iowait();

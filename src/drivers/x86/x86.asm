@@ -79,3 +79,10 @@ x86_ReloadPageDirectory:
     mov cr3, eax
     sti
     ret
+
+global x86_CR2_register
+x86_CR2_register:
+    cli
+    mov eax, cr2
+    sti
+    ret

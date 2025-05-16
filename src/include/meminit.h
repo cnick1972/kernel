@@ -53,3 +53,4 @@ void* page_table_virtual_address(uint16_t page_table_number);
 
 void PageFaulthandler(Registers* regs);
 bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress);
+bool Map4MBPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress, size_t size);

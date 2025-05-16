@@ -10,7 +10,7 @@ SECTIONS
 
     .multiboot ALIGN(4K) : AT(ADDR(.multiboot) - 0xc0000000)
     {
-        *(.multiboot)
+        KEEP(*(.multiboot))
     }
     
     .text ALIGN(4K) : AT(ADDR(.text) - 0xc0000000)

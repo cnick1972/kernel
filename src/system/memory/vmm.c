@@ -121,13 +121,20 @@ uint32_t num_present_pages(page_directory_t pd)
 
 void PageFaulthandler(Registers* regs)
 {
+    
+
+    uint32_t cr2 = x86_CR2_register();
+
+   
+
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
 
     // do i have a page directory entry for the memory requested?
-    uint32_t directoryEntry = regs->eax / 1024 / 4096;
+    uint32_t directoryEntry = cr2 / 1024 / 4096;
 
     if(!get_present_from_pde(pd[directoryEntry]))
     {
+        
         // allocate a memory block for the required pde
         void* newPage = allocate_physical_page();
         uint32_t pde = make_page_directory_entry((void*) newPage, 
@@ -142,10 +149,11 @@ void PageFaulthandler(Registers* regs)
 
         page_table_t pt = (page_table_t) page_table_virtual_address(directoryEntry);
 
-        uint32_t tbentry = (regs->eax >> 12) & 0x3ff;
+        uint32_t tbentry = (cr2 >> 12) & 0x3ff;
 
         if(!get_present_from_pte(pt[tbentry]))
         {
+
             newPage = allocate_physical_page();
         
             pt[tbentry] = make_page_table_entry(newPage, 
@@ -158,7 +166,7 @@ void PageFaulthandler(Registers* regs)
         }
     }
     x86_ReloadPageDirectory();
-
+    kprintf("In handler 0x%08x\n", cr2);
 }
 
 bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
@@ -183,25 +191,49 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
                                 true);
 
         pd[directoryEntry] = pde;
-
-        page_table_t pt = (page_table_t) page_table_virtual_address(directoryEntry);
-        uint32_t tbentry = ((uint32_t)vAddress >> 12) & 0x3ff;
-    
-        if(!get_present_from_pte(pt[tbentry]))
-        {
-            pt[tbentry] = make_page_table_entry(pAddress, 
-                            false, 
-                            false, 
-                            false, 
-                            SUPERVISOR, 
-                            READ_WRITE, 
-                            true);
-        }
     }
-    x86_ReloadPageDirectory();
+
+    page_table_t pt = (page_table_t) page_table_virtual_address(directoryEntry);
+    uint32_t tbentry = ((uint32_t)vAddress >> 12) & 0x3ff;
+    
+    if(!get_present_from_pte(pt[tbentry]))
+    {
+        pt[tbentry] = make_page_table_entry(pAddress, 
+                        false, 
+                        false, 
+                        false, 
+                        SUPERVISOR, 
+                        READ_WRITE, 
+                        true);
+    }
+    //x86_ReloadPageDirectory();
 
 
     return false;
 
 }
 
+
+bool Map4MBPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress, size_t size)
+{
+    page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
+
+    uint32_t directoryEntry = (uint32_t)vAddress / 1024 / 4096;
+
+    int entries = size / 4;
+    if(size % 4)
+        entries++;
+
+    for(int i = 0; i < entries; i++)
+    {
+        uint32_t entry = (uint32_t)pAddress + (0x400000 * i) & 0xffc00000;
+        entry = entry + 0x83;
+    
+        pd[directoryEntry + i] = entry;
+
+    }    
+
+    x86_ReloadPageDirectory();
+
+    return false;
+}
