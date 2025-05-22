@@ -93,7 +93,7 @@ uint32_t round_down_to_nearest_page_start(uint32_t address)
  */
 uint32_t init_pmm_allocator(uint32_t memsize)
 {
-    kprintf("Mem size: 0x%08x\n", memsize * 1024);
+    //kprintf("Mem size: 0x%08x\n", memsize * 1024);
     pmm_memory_size = memsize;
     pmm_max_blocks = (pmm_memory_size * 1024) / BLOCK_SIZE;
     pmm_used_blocks = pmm_max_blocks;
@@ -143,7 +143,7 @@ uint32_t init_pmm_allocator(uint32_t memsize)
     return free_pages;
 }
 
-void* allocate_physical_page()
+uintptr_t allocate_physical_page()
 {
     for(uint32_t index = 0; index < bitmapsize; index++)
     {
@@ -156,7 +156,7 @@ void* allocate_physical_page()
                 {
                     uint32_t page_number = index * 32 + bit;
                     mark_unavailable(page_number);
-                    void* page_start = (void*) (page_number << PAGE_OFFSET_BITS);
+                    uintptr_t page_start = (uintptr_t) (page_number << PAGE_OFFSET_BITS);
                     return page_start;
                 }
             }

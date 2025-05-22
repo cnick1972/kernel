@@ -3,5 +3,8 @@ build
 kernel.iso
 image
 machine.log
-
+html
+Doxyfile
+tmp
+hdimage
 

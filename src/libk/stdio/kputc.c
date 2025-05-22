@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <vga.h>
+#include <console.h>
 
 void kputc(const char c)
 {
-    putchar(c);
+    putc(c);
 }

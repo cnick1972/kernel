@@ -79,7 +79,7 @@ page_directory_t initialize_kernel_page_directory()
 
     pd[1023] = pde;
 
-    void* page_table_physical_address = allocate_physical_page();
+    void* page_table_physical_address = (void*)allocate_physical_page();
     pd[KERNEL_PAGE_TABLE_NUMBER] = make_page_directory_entry((void*) page_table_physical_address, 
                                                              FOUR_KB, 
                                                              false, 
@@ -112,7 +112,7 @@ uint32_t num_present_pages(page_directory_t pd)
         bool present = entry & 0x1;
 
         if(present) {
-            kprintf("Page Directory Entry %d: 0x%08x\n", i, entry);
+            //kprintf("Page Directory Entry %d: 0x%08x\n", i, entry);
             num++;
         }
     }
@@ -136,7 +136,7 @@ void PageFaulthandler(Registers* regs)
     {
         
         // allocate a memory block for the required pde
-        void* newPage = allocate_physical_page();
+        void* newPage = (void*)allocate_physical_page();
         uint32_t pde = make_page_directory_entry((void*) newPage, 
                         FOUR_KB, 
                         false, 
@@ -154,7 +154,7 @@ void PageFaulthandler(Registers* regs)
         if(!get_present_from_pte(pt[tbentry]))
         {
 
-            newPage = allocate_physical_page();
+            newPage = (void*)allocate_physical_page();
         
             pt[tbentry] = make_page_table_entry(newPage, 
                             false, 
@@ -166,7 +166,7 @@ void PageFaulthandler(Registers* regs)
         }
     }
     x86_ReloadPageDirectory();
-    kprintf("In handler 0x%08x\n", cr2);
+    //kprintf("In handler 0x%08x\n", cr2);
 }
 
 bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
@@ -181,7 +181,7 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
 
     if(!get_present_from_pde(pd[directoryEntry]))
     {
-        void* newPage = allocate_physical_page();
+        void* newPage = (void*)allocate_physical_page();
         uint32_t pde = make_page_directory_entry((void*) newPage, 
                                 FOUR_KB, 
                                 false, 

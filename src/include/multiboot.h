@@ -102,5 +102,36 @@ typedef struct
     uint32_t type;
 } __attribute__((packed))  multiboot_mmap_entry;
 
+
+
+
+#define MULTIBOOT_TAG_TYPE_END                  0
+#define MULTIBOOT_TAG_TYPE_CMDLINE              1
+#define MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME     2
+#define MULTIBOOT_TAG_TYPE_FRAMEBUFFER          8
+#define MULTIBOOT_TAG_TYPE_MMAP                 6
+
+typedef struct {
+    uint32_t    type;
+    uint32_t    size;
+} multiboot_tag;
+
+typedef struct {
+    uint32_t type;
+    uint32_t size;
+    uint64_t framebuffer_addr;
+    uint32_t framebuffer_pitch;
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint8_t  framebuffer_bpp;
+    uint8_t  framebuffer_type;
+    uint16_t reserved;
+} multiboot_tag_framebuffer;
+
+
+
+
+
+
 multiboot_info* GetMultiboot();
 void StoreMultiboot(multiboot_info* mbi);

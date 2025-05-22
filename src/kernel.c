@@ -10,10 +10,8 @@
 #include <irq.h>
 #include <x86.h>
 #include <acpi.h>
-#include <framebuffer.h>
+#include <console.h>
 #include <serial.h>
-
-//Framebuffer fb;
 
 void timer(Registers* regs)
 {
@@ -22,14 +20,15 @@ void timer(Registers* regs)
 
 void kmain(uint32_t eax, uint32_t ebx)
 {
-    kclrscr();
+    
     multiboot_info* mbi = (multiboot_info*) ebx;
 
     StoreMultiboot(mbi);
-    kprintf("Memory Map address 0x%08x\n", mbi->mmap_addr);
+//    kprintf("Memory Map address 0x%08x\n", mbi->mmap_addr);
 
-    kprintf("Framebuffer address: 0x%08x\n",mbi->framebuffer_addr);
-    kprintf("Framebuffer height: %d\n", mbi->framebuffer_height);
+//    kprintf("Framebuffer address: 0x%08x\n",mbi->framebuffer_addr);
+//    kprintf("Framebuffer height: %d\n", mbi->framebuffer_height);
+//    kprintf("framebuffer type: %d\n", mbi->framebuffer_type);
 
     init_memory(GetMultiboot());
     InitSerial();
@@ -53,18 +52,23 @@ void kmain(uint32_t eax, uint32_t ebx)
     init_pmm_allocator(mbi->mem_upper + 1024);
     page_directory_t pd = initialize_kernel_page_directory();
     x86_ReloadPageDirectory();
-    InitFramebuffer(mbi);
+    console_init(mbi);
 
-    uint32_t* frame = fb.address;
-    for(uint32_t i = 0; i < (fb.width * fb.height); i++)
-    {
-        frame[i] = 0x0000ff;
-    }
+// We can now print to the screen
 
-    SerialPrintf("Screen is %d x %d\n", fb.width, fb.height);
+    kclrscr();
+
 
     uint32_t* ptr = 0; 
     ptr = (uint32_t*)find_rsdp();
+
+    SerialPrintf("framebuffer type: %d\n", mbi->framebuffer_type);
+
+    kprintf("Memory Map address 0x%08x\n", mbi->mmap_addr);
+
+    kprintf("Framebuffer address: 0x%08x\n",mbi->framebuffer_addr);
+    kprintf("Framebuffer height: %d\n", mbi->framebuffer_height);
+    kprintf("framebuffer type: %d\n", mbi->framebuffer_type);
 
 
 end:

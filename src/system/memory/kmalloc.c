@@ -5,6 +5,8 @@
 #include <meminit.h>
 #include <x86.h>
 
+#include <serial.h>
+
 #define ALLIGNMENT 8
 
 #define PAGE_DIRECTORY_VIRTUAL_ADDRESS 0xfffff000
@@ -17,7 +19,7 @@ typedef uint32_t * page_table_t;
 page_directory_t pd = (page_directory_t) PAGE_DIRECTORY_VIRTUAL_ADDRESS;
 
 void* ptrHeapStart = (void*)0xd0000000;
-uint32_t HeapSize = 4096;
+uint32_t HeapSize = 0x1000;
 
 typedef struct block_t
 {
@@ -53,7 +55,10 @@ void* kmalloc(size_t size)
 {
     size = align_up(size, ALLIGNMENT);
 
+    SerialPrintf("Here 1\n");
+
     if(!free_list) {
+        SerialPrintf("Here 2\n");
         free_list = (block_t *)ptrHeapStart;
         free_list->size = HeapSize - BLOCK_SIZE;
         free_list->next = NULL;
@@ -61,9 +66,13 @@ void* kmalloc(size_t size)
     }
 
     block_t* current = free_list;
+
+    SerialPrintf("Here 3\n");
     while(current) {
         if(current->free && current->size >= size)
         {
+            
+            SerialPrintf("Here 4\n");
             split_block(current, size);
             current->free = 0;
             return (uint8_t*)current + BLOCK_SIZE;
@@ -90,9 +99,9 @@ void _kfree(void **ptr) {
             current = current->next;
         }
     }
-    kprintf("here 0x%08x\n", *ptr);
+    //kprintf("here 0x%08x\n", *ptr);
     *ptr = NULL;
-    kprintf("here 0x%08x\n", *ptr);
+    //kprintf("here 0x%08x\n", *ptr);
 }
 
 void debug_heap() {

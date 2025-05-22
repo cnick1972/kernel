@@ -1,5 +1,8 @@
 #include <vga.h>
 #include <x86.h>
+#include <framebuffer.h>
+
+#include <stddef.h>
 
 const unsigned SCREEN_WIDTH = 80;
 const unsigned SCREEN_HEIGHT = 25;
@@ -7,7 +10,6 @@ const uint8_t DEFAULT_COLOR = 0x17;
 
 uint8_t* g_ScreenBuffer = (uint8_t*)0xc00b8000;
 int g_ScreenX = 0, g_ScreenY = 0;
-
 
 void putchr(int x, int y, char c)
 {
@@ -39,7 +41,7 @@ void setcursor(int x, int y)
     x86_outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF)); 
 }
 
-void clrscr()
+void text_clrscr()
 {
     for (int y = 0; y < SCREEN_HEIGHT; y++)
         for (int x = 0; x < SCREEN_WIDTH; x++)
@@ -72,7 +74,7 @@ void scrollback(int lines)
     g_ScreenY -= lines;
 }
 
-void putchar(const char c)
+void text_putchar(const char c)
 {
     switch (c)
     {
@@ -83,7 +85,7 @@ void putchar(const char c)
     
         case '\t':
             for (int i = 0; i < 4 - (g_ScreenX % 4); i++)
-                putchar(' ');
+                text_putchar(' ');
             break;
 
         case '\r':
