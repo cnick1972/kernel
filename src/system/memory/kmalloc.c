@@ -83,7 +83,7 @@ void* kmalloc(size_t size)
 }
 
 void _kfree(void **ptr) {
-    if (!ptr && !*ptr) {
+    if (!ptr || !*ptr) {
         return;
     }
 
