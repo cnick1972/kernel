@@ -41,13 +41,13 @@ uint32_t make_page_table_entry(void* physical_address,
                             enum page_permissions_t permissions,
                             bool present)
 {
-    uint32_t entry = (uint32_t) physical_address; //(uint32_t) physical_address;
-    entry |= global << 8;
-    entry |= cache_disabled << 4;
-    entry |= write_through << 3;
-    entry |= privilege << 2;
-    entry |= permissions << 1;
-    entry |= present;
+    uint32_t entry = ((uint32_t) physical_address & 0xFFFFF000); //(uint32_t) physical_address;
+    entry |= (global ? (1u << 8) : 0);
+    entry |= (cache_disabled ? ( 1u << 4) : 0);
+    entry |= (write_through ? (1u << 3) : 0);
+    entry |= (privilege << 2);
+    entry |= (permissions << 1);
+    entry |= (present ? 1u : 0);
 
     return entry;
 }

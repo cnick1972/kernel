@@ -32,6 +32,7 @@ static	uint32_t	pmm_max_blocks = 0;
 static	uint32_t*	pmm_bitmap = &kernel_pmm_virtual_start;
 
 uint32_t bitmapsize;
+uint32_t bitmap_dwords;
 uint32_t free_pages = 0;
 
 void mark_free(uint32_t page_number) 
@@ -101,7 +102,7 @@ uint32_t init_pmm_allocator(uint32_t memsize)
     // calculate how big the bitmap is
 
     bitmapsize = pmm_max_blocks / PAGES_PER_BYTE;
-
+    bitmap_dwords = (bitmapsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     
     //Set all blocks to unavailable, the free block will be switch on later
     memset(pmm_bitmap, 0x00, pmm_max_blocks / PAGES_PER_BYTE);
@@ -145,7 +146,7 @@ uint32_t init_pmm_allocator(uint32_t memsize)
 
 uintptr_t allocate_physical_page()
 {
-    for(uint32_t index = 0; index < bitmapsize; index++)
+    for(uint32_t index = 0; index < bitmap_dwords; index++)
     {
         if(pmm_bitmap[index] != 0)
         {
