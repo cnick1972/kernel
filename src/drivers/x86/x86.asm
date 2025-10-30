@@ -19,7 +19,7 @@ global x86_outw
 x86_outw:
     [bits 32]
     mov dx, [esp + 4]
-    mov al, [esp + 8]
+    mov ax, [esp + 8]
     out dx, ax
     ret
 
@@ -35,7 +35,7 @@ global x86_outl
 x86_outl:
     [bits 32]
     mov dx, [esp + 4]
-    mov al, [esp + 8]
+    mov eax, [esp + 8]
     out dx,eax
     ret
 
