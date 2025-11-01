@@ -53,16 +53,17 @@ void mark_free(uint32_t page_number)
 void mark_unavailable(uint32_t page_number)
 {
     uint32_t index = page_number >> 5;
-    uint32_t bit = page_number & 0b11111; 
+    uint32_t bit = page_number & 0b11111;
+    uint32_t mask = 1u << bit;
     uint32_t value = pmm_bitmap[index];
 
-    if((value & (1 << bit)) == 1)
+    if(value & mask)
     {
-        free_pages--;
+        if(free_pages > 0)
+            free_pages--;
     }
 
-    value &= ~(1 << bit);
-    pmm_bitmap[index] = value;
+    pmm_bitmap[index] = value & ~mask;
 }
 
 uint32_t page_number(uint32_t address)

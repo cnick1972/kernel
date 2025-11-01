@@ -184,11 +184,12 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
     // Step 1 - Check is the requested virtual address is available
     // Step 1.1 see if there is a page directory for the request virtual address
 
-    uint32_t directoryEntry = (uint32_t)vAddress / 1024 / 4096;
+    uint32_t directoryEntry = (uint32_t)vAddress >> 22;
+    page_table_t pt;
 
     if(!get_present_from_pde(pd[directoryEntry]))
     {
-        void* newPage = (void*)allocate_physical_page();
+        uintptr_t newPage = allocate_physical_page();
         uint32_t pde = make_page_directory_entry((void*) newPage, 
                                 FOUR_KB, 
                                 false, 
@@ -198,9 +199,14 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
                                 true);
 
         pd[directoryEntry] = pde;
+        pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        memset(pt, 0, PAGE_SIZE_BYTES);
+    }
+    else
+    {
+        pt = (page_table_t) page_table_virtual_address(directoryEntry);
     }
 
-    page_table_t pt = (page_table_t) page_table_virtual_address(directoryEntry);
     uint32_t tbentry = ((uint32_t)vAddress >> 12) & 0x3ff;
     
     if(!get_present_from_pte(pt[tbentry]))

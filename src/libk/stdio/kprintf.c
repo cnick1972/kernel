@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
-
+#include <stdint.h>
 
 #if __has_attribute(__fallthrough__)
 # define fallthrough                    __attribute__((__fallthrough__))
@@ -45,8 +45,18 @@ __res = ((unsigned long) n) % (unsigned) base; \
 n = ((unsigned long) n) / (unsigned) base; \
 __res; })
 
-static char *number(char *str, long num, int base, int size, int precision,
-		    int type)
+static inline void append_char(char **str, size_t *remaining, int *total, char ch)
+{
+	if (*remaining > 1) {
+		**str = ch;
+		(*str)++;
+		(*remaining)--;
+	}
+	(*total)++;
+}
+
+static char *number(char *str, size_t *remaining, int *total, long num, int base,
+	    int size, int precision, int type)
 {
 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
 	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
@@ -61,7 +71,7 @@ static char *number(char *str, long num, int base, int size, int precision,
 	if (type & LEFT)
 		type &= ~ZEROPAD;
 	if (base < 2 || base > 16)
-		return NULL;
+		return str;
 	c = (type & ZEROPAD) ? '0' : ' ';
 	sign = 0;
 	if (type & SIGN) {
@@ -94,55 +104,57 @@ static char *number(char *str, long num, int base, int size, int precision,
 	size -= precision;
 	if (!(type & (ZEROPAD + LEFT)))
 		while (size-- > 0)
-			*str++ = ' ';
+			append_char(&str, remaining, total, ' ');
 	if (sign)
-		*str++ = sign;
+		append_char(&str, remaining, total, sign);
 	if (type & SPECIAL) {
 		if (base == 8)
-			*str++ = '0';
+			append_char(&str, remaining, total, '0');
 		else if (base == 16) {
-			*str++ = '0';
-			*str++ = ('X' | locase);
+			append_char(&str, remaining, total, '0');
+			append_char(&str, remaining, total, ('X' | locase));
 		}
 	}
 	if (!(type & LEFT))
 		while (size-- > 0)
-			*str++ = c;
+			append_char(&str, remaining, total, c);
 	while (i < precision--)
-		*str++ = '0';
+		append_char(&str, remaining, total, '0');
 	while (i-- > 0)
-		*str++ = tmp[i];
+		append_char(&str, remaining, total, tmp[i]);
 	while (size-- > 0)
-		*str++ = ' ';
+		append_char(&str, remaining, total, ' ');
 	return str;
 }
 
-
-int vsprintf(char *buf, const char *fmt, va_list args)
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	int len;
 	unsigned long num;
 	int i, base;
-	char *str;
+	char *str = buf;
 	const char *s;
 
-	int flags;		/* flags to number() */
+	int flags;          /* flags to number() */
 
-	int field_width;	/* width of output field */
-	int precision;		/* min. # of digits for integers; max
-				   number of chars for from string */
-	int qualifier;		/* 'h', 'l', or 'L' for integer fields */
+	int field_width;    /* width of output field */
+	int precision;      /* min. # of digits for integers; max
+			   number of chars for from string */
+	int qualifier;      /* 'h', 'l', or 'L' for integer fields */
 
-	for (str = buf; *fmt; ++fmt) {
+	size_t remaining = size;
+	int total = 0;
+
+	for (; *fmt; ++fmt) {
 		if (*fmt != '%') {
-			*str++ = *fmt;
+			append_char(&str, &remaining, &total, *fmt);
 			continue;
 		}
 
 		/* process flags */
 		flags = 0;
 	      repeat:
-		++fmt;		/* this also skips first '%' */
+		++fmt;          /* this also skips first '%' */
 		switch (*fmt) {
 		case '-':
 			flags |= LEFT;
@@ -204,10 +216,10 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 		case 'c':
 			if (!(flags & LEFT))
 				while (--field_width > 0)
-					*str++ = ' ';
-			*str++ = (unsigned char)va_arg(args, int);
+					append_char(&str, &remaining, &total, ' ');
+			append_char(&str, &remaining, &total, (unsigned char)va_arg(args, int));
 			while (--field_width > 0)
-				*str++ = ' ';
+				append_char(&str, &remaining, &total, ' ');
 			continue;
 
 		case 's':
@@ -216,11 +228,11 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 
 			if (!(flags & LEFT))
 				while (len < field_width--)
-					*str++ = ' ';
+					append_char(&str, &remaining, &total, ' ');
 			for (i = 0; i < len; ++i)
-				*str++ = *s++;
+				append_char(&str, &remaining, &total, *s++);
 			while (len < field_width--)
-				*str++ = ' ';
+				append_char(&str, &remaining, &total, ' ');
 			continue;
 
 		case 'p':
@@ -228,23 +240,23 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 				field_width = 2 * sizeof(void *);
 				flags |= ZEROPAD;
 			}
-			str = number(str,
-				     (unsigned long)va_arg(args, void *), 16,
-				     field_width, precision, flags);
+			str = number(str, &remaining, &total,
+			    (unsigned long)va_arg(args, void *), 16,
+			    field_width, precision, flags);
 			continue;
 
 		case 'n':
 			if (qualifier == 'l') {
 				long *ip = va_arg(args, long *);
-				*ip = (str - buf);
+				*ip = total;
 			} else {
 				int *ip = va_arg(args, int *);
-				*ip = (str - buf);
+				*ip = total;
 			}
 			continue;
 
 		case '%':
-			*str++ = '%';
+			append_char(&str, &remaining, &total, '%');
 			continue;
 
 			/* integer number formats - set up the flags and "break" */
@@ -268,9 +280,9 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			break;
 
 		default:
-			*str++ = '%';
+			append_char(&str, &remaining, &total, '%');
 			if (*fmt)
-				*str++ = *fmt;
+				append_char(&str, &remaining, &total, *fmt);
 			else
 				--fmt;
 			continue;
@@ -285,10 +297,29 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 			num = va_arg(args, int);
 		else
 			num = va_arg(args, unsigned int);
-		str = number(str, num, base, field_width, precision, flags);
+		str = number(str, &remaining, &total, num, base, field_width, precision, flags);
 	}
-	*str = '\0';
-	return str - buf;
+
+	if (size > 0) {
+		*str = '\0';
+	}
+	return total;
+}
+
+int vsprintf(char *buf, const char *fmt, va_list args)
+{
+	return vsnprintf(buf, SIZE_MAX, fmt, args);
+}
+
+int snprintf(char *buf, size_t size, const char *fmt, ...)
+{
+	va_list args;
+	int i;
+
+	va_start(args, fmt);
+	i = vsnprintf(buf, size, fmt, args);
+	va_end(args);
+	return i;
 }
 
 int sprintf(char *buf, const char *fmt, ...)
@@ -297,7 +328,7 @@ int sprintf(char *buf, const char *fmt, ...)
 	int i;
 
 	va_start(args, fmt);
-	i = vsprintf(buf, fmt, args);
+	i = vsnprintf(buf, SIZE_MAX, fmt, args);
 	va_end(args);
 	return i;
 }
@@ -309,7 +340,7 @@ int kprintf(const char* fmt, ...)
 	int printed;
 
 	va_start(args, fmt);
-	printed = vsprintf(printf_buf, fmt, args);
+	printed = vsnprintf(printf_buf, sizeof(printf_buf), fmt, args);
 	va_end(args);
 
 	kputs(printf_buf);

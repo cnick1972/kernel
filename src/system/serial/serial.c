@@ -34,12 +34,20 @@ void SerialWriteString(const char* str) {
     }
 }
 
-void SerialPrintf(const char* fmt, ...) 
+void SerialPrintf(const char* fmt, ...)
 {
     char buf[512];
     va_list args;
     va_start(args, fmt);
-    vsprintf(buf, fmt, args);
+    int written = vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
+
+    if (written < 0)
+        return;
+
+    if ((size_t)written >= sizeof(buf))
+        written = sizeof(buf) - 1;
+
+    buf[written] = '\0';
     SerialWriteString(buf);
 }
