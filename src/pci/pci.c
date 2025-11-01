@@ -58,10 +58,13 @@ static void pci_log_function(uint8_t bus, uint8_t device, uint8_t function)
         .prog_if    = pci_read_config_byte(bus, device, function, 0x09),
     };
 
-    kprintf("PCI %02x:%02x.%u vendor=%04x device=%04x class=%02x%02x prog-if=%02x\n",
+    const char* class_str = pci_class_name(dev.class_code);
+    const char* subclass_str = pci_subclass_name(dev.class_code, dev.subclass, dev.prog_if);
+
+    kprintf("PCI %02x:%02x.%u vendor=%04x device=%04x [%s / %s, prog-if %02x]\n",
             dev.bus, dev.device, dev.function,
             dev.vendor_id, dev.device_id,
-            dev.class_code, dev.subclass, dev.prog_if);
+            class_str, subclass_str, dev.prog_if);
 }
 
 static void pci_scan_device(uint8_t bus, uint8_t device)
