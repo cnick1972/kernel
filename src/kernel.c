@@ -12,6 +12,7 @@
 #include <acpi.h>
 #include <console.h>
 #include <serial.h>
+#include <pci.h>
 
 void timer(Registers* regs)
 {
@@ -69,6 +70,8 @@ void kmain(uint32_t eax, uint32_t ebx)
     kprintf("Framebuffer address: 0x%08x\n",mbi->framebuffer_addr);
     kprintf("Framebuffer height: %d\n", mbi->framebuffer_height);
     kprintf("framebuffer type: %d\n", mbi->framebuffer_type);
+
+    pci_enumerate();
 
 
 end:
