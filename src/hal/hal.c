@@ -4,6 +4,9 @@
 #include <isr.h>
 #include <irq.h>
 
+/**
+ * @brief Initialize core processor structures and interrupt plumbing.
+ */
 void HAL_Initialize()
 {
     x86_GDT_Initialize();

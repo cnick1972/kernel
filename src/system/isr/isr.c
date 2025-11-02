@@ -44,6 +44,9 @@ static const char* const g_Exceptions[] = {
 
 void x86_ISR_InitializeGates();
 
+/**
+ * @brief Initialize default CPU exception handlers and enable IDT gates.
+ */
 void x86_ISR_Initialize()
 {
     x86_ISR_InitializeGates();
@@ -52,6 +55,11 @@ void x86_ISR_Initialize()
     x86_IDT_DisableGate(0x80);
 }
 
+/**
+ * @brief Central ISR dispatcher invoked from assembly stubs.
+ *
+ * @param regs Register snapshot captured on interrupt entry.
+ */
 void __attribute__((cdecl)) x86_ISR_Handler(Registers* regs)
 {
     if(g_ISRHandlers[regs->interrupt] != NULL)
@@ -76,6 +84,12 @@ void __attribute__((cdecl)) x86_ISR_Handler(Registers* regs)
     }
 }
 
+/**
+ * @brief Register a high-level ISR callback and enable its gate.
+ *
+ * @param interrupt Vector number (0-255).
+ * @param handler   Callback to execute when the interrupt fires.
+ */
 void x86_ISR_RegisterHandler(int interrupt, ISRHandler handler)
 {
     g_ISRHandlers[interrupt] = handler;

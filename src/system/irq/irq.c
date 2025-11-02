@@ -9,6 +9,11 @@
 
 IRQHandler g_IRQHandlers[16];
 
+/**
+ * @brief Low-level IRQ dispatcher invoked from the ISR stubs.
+ *
+ * @param regs Register snapshot captured on interrupt entry.
+ */
 void x86_IRQ_Handler(Registers* regs)
 {
     int irq = regs->interrupt - PIC_REMAP_OFFSET;
@@ -30,6 +35,9 @@ void x86_IRQ_Handler(Registers* regs)
     x86_PIC_SendEndOfInterrupt(irq);
 }
 
+/**
+ * @brief Initialize the PIC and install IRQ handlers into the IDT.
+ */
 void x86_IRQ_Initialize()
 {
     x86_PIC_Configure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8);
@@ -40,6 +48,12 @@ void x86_IRQ_Initialize()
     x86_EnableInterrupts();
 }
 
+/**
+ * @brief Register a high-level IRQ handler callback.
+ *
+ * @param irq     IRQ line number (0-15).
+ * @param handler Callback to invoke when the IRQ fires.
+ */
 void x86_IRQ_RegisterHandler(int irq, IRQHandler handler)
 {
     g_IRQHandlers[irq] = handler;

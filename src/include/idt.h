@@ -18,7 +18,31 @@ typedef enum
 
 } IDT_FLAGS;
 
+/**
+ * @brief Install an entry in the interrupt descriptor table.
+ *
+ * @param interrupt         Vector number to configure.
+ * @param base              Pointer to the handler function.
+ * @param segmentDescriptor Code segment selector to use.
+ * @param flags             Gate attributes (type and privilege).
+ */
 void x86_IDT_SetGate(int interrupt, void* base, uint16_t segmentDescriptor, uint8_t flags);
+
+/**
+ * @brief Mark an IDT entry as present.
+ *
+ * @param interrupt Vector number to enable.
+ */
 void x86_IDT_EnableGate(int interrupt);
+
+/**
+ * @brief Mark an IDT entry as not present.
+ *
+ * @param interrupt Vector number to disable.
+ */
 void x86_IDT_DisableGate(int interrupt);
+
+/**
+ * @brief Load the IDT descriptor into the processor.
+ */
 void x86_IDT_Initialize();

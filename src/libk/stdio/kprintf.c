@@ -8,6 +8,13 @@
 # define fallthrough                    do {} while (0)  /* fallthrough */
 #endif
 
+/**
+ * @brief Bounded string length helper.
+ *
+ * @param s     Input string.
+ * @param count Maximum characters to inspect.
+ * @return Number of characters encountered before null or limit.
+ */
 size_t strnlen(const char * s, size_t count)
 {
 	const char *sc;
@@ -17,11 +24,23 @@ size_t strnlen(const char * s, size_t count)
 	return sc - s;
 }
 
+/**
+ * @brief Test whether a character is a decimal digit.
+ *
+ * @param ch Character to test.
+ * @return Non-zero if digit, otherwise zero.
+ */
 static inline int isdigit(int ch)
 {
 	return (ch >= '0') && (ch <= '9');
 }
 
+/**
+ * @brief Parse decimal digits from a string.
+ *
+ * @param s Pointer to string pointer; advanced past parsed digits.
+ * @return Parsed integer value.
+ */
 static int skip_atoi(const char **s)
 {
 	int i = 0;
@@ -45,6 +64,14 @@ __res = ((unsigned long) n) % (unsigned) base; \
 n = ((unsigned long) n) / (unsigned) base; \
 __res; })
 
+/**
+ * @brief Append a character to a string buffer with bounds checking.
+ *
+ * @param str       Pointer to current write cursor.
+ * @param remaining Pointer to remaining capacity counter.
+ * @param total     Pointer to total characters that would be written.
+ * @param ch        Character to append.
+ */
 static inline void append_char(char **str, size_t *remaining, int *total, char ch)
 {
 	if (*remaining > 1) {
@@ -55,8 +82,21 @@ static inline void append_char(char **str, size_t *remaining, int *total, char c
 	(*total)++;
 }
 
+/**
+ * @brief Format an integer into a string buffer.
+ *
+ * @param str       Pointer to current write cursor.
+ * @param remaining Pointer to remaining capacity counter.
+ * @param total     Pointer to total characters that would be written.
+ * @param num       Number to format.
+ * @param base      Numeric base (8, 10, 16).
+ * @param size      Field width.
+ * @param precision Precision specifier.
+ * @param type      Flag mask controlling formatting behaviour.
+ * @return Updated write cursor.
+ */
 static char *number(char *str, size_t *remaining, int *total, long num, int base,
-	    int size, int precision, int type)
+        int size, int precision, int type)
 {
 	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
 	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
@@ -127,6 +167,15 @@ static char *number(char *str, size_t *remaining, int *total, long num, int base
 	return str;
 }
 
+/**
+ * @brief Format a string into a buffer with explicit bounds.
+ *
+ * @param buf   Destination buffer.
+ * @param size  Size of destination buffer in bytes.
+ * @param fmt   Format string.
+ * @param args  Variadic argument list.
+ * @return Number of characters that would have been written (excluding null terminator).
+ */
 int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	int len;
@@ -306,11 +355,28 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	return total;
 }
 
+/**
+ * @brief Format a string into a buffer without bounds checking.
+ *
+ * @param buf Destination buffer.
+ * @param fmt Format string.
+ * @param args Variadic argument list.
+ * @return Number of characters written (excluding null terminator).
+ */
 int vsprintf(char *buf, const char *fmt, va_list args)
 {
 	return vsnprintf(buf, SIZE_MAX, fmt, args);
 }
 
+/**
+ * @brief Format a string into a buffer with explicit bounds (variadic wrapper).
+ *
+ * @param buf  Destination buffer.
+ * @param size Size of destination buffer in bytes.
+ * @param fmt  Format string.
+ * @param ...  Additional variadic arguments.
+ * @return Number of characters that would have been written (excluding null terminator).
+ */
 int snprintf(char *buf, size_t size, const char *fmt, ...)
 {
 	va_list args;
@@ -322,6 +388,14 @@ int snprintf(char *buf, size_t size, const char *fmt, ...)
 	return i;
 }
 
+/**
+ * @brief Format a string into a buffer without bounds checking (variadic wrapper).
+ *
+ * @param buf Destination buffer.
+ * @param fmt Format string.
+ * @param ... Additional variadic arguments.
+ * @return Number of characters written (excluding null terminator).
+ */
 int sprintf(char *buf, const char *fmt, ...)
 {
 	va_list args;
@@ -333,6 +407,13 @@ int sprintf(char *buf, const char *fmt, ...)
 	return i;
 }
 
+/**
+ * @brief Printf-style formatted output to the active console.
+ *
+ * @param fmt Format string.
+ * @param ... Additional variadic arguments.
+ * @return Number of characters written (excluding null terminator).
+ */
 int kprintf(const char* fmt, ...)
 {
 	char printf_buf[1024];
