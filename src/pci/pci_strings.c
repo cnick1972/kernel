@@ -1,5 +1,11 @@
 #include <pci.h>
 
+/**
+ * @brief Translate a PCI class code into a human-readable name.
+ *
+ * @param class_code PCI class code from the device configuration header.
+ * @return Pointer to a static string describing the class.
+ */
 const char* pci_class_name(uint8_t class_code)
 {
     switch (class_code) {
@@ -25,6 +31,14 @@ const char* pci_class_name(uint8_t class_code)
     }
 }
 
+/**
+ * @brief Translate a PCI subclass/prog-if tuple into a human-readable name.
+ *
+ * @param class_code PCI class code.
+ * @param subclass   PCI subclass code.
+ * @param prog_if    Programming interface code.
+ * @return Pointer to a static string describing the subclass.
+ */
 const char* pci_subclass_name(uint8_t class_code, uint8_t subclass, uint8_t prog_if)
 {
     switch (class_code) {
