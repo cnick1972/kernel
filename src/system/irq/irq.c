@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <isr.h>
 
-#define PIC_REMAP_OFFSET        0x20
+#define PIC_REMAP_OFFSET        0x20 /**< Offset applied when remapping the PIC. */
 
+/** @brief High-level IRQ handler table (one entry per IRQ line). */
 IRQHandler g_IRQHandlers[16];
 
 /**

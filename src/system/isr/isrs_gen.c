@@ -2,6 +2,9 @@
 #include <idt.h>
 #include <gdt.h>
 
+/**
+ * @brief Assembly ISR entry stubs, one per interrupt vector.
+ */
 void __attribute__((cdecl)) x86_ISR0();
 void __attribute__((cdecl)) x86_ISR1();
 void __attribute__((cdecl)) x86_ISR2();

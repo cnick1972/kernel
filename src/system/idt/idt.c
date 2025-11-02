@@ -2,25 +2,42 @@
 #include <stdint.h>
 #include <binary.h>
 
+/**
+ * @brief Interrupt descriptor table entry layout.
+ */
 typedef struct
 {
-    uint16_t    BaseLow;
-    uint16_t    SegmentSelector;
-    uint8_t     Reserved;
-    uint8_t     Flags;
-    uint16_t    BaseHigh;
+    uint16_t    BaseLow;          /**< Handler address bits 0-15. */
+    uint16_t    SegmentSelector;  /**< Code segment selector for the handler. */
+    uint8_t     Reserved;         /**< Unused, must be zero. */
+    uint8_t     Flags;            /**< Gate type, privilege, and presence bits. */
+    uint16_t    BaseHigh;         /**< Handler address bits 16-31. */
 } __attribute__((packed)) IDTEntry;
 
+/**
+ * @brief Pseudo-descriptor consumed by the LIDT instruction.
+ */
 typedef struct 
 {
-    uint16_t    Limit;
-    IDTEntry*   Ptr;
+    uint16_t    Limit;            /**< Size of the IDT in bytes minus one. */
+    IDTEntry*   Ptr;              /**< Linear address of the first entry. */
 } __attribute__((packed)) IDTDescriptor;
 
+/**
+ * @brief Global interrupt descriptor table.
+ */
 IDTEntry g_IDT[256];
 
+/**
+ * @brief Descriptor referencing the active IDT.
+ */
 IDTDescriptor g_IDTDescriptor = { sizeof(g_IDT) - 1, g_IDT };
 
+/**
+ * @brief Assembly helper that loads the IDT descriptor using LIDT.
+ *
+ * @param idtDescriptor Pointer to the descriptor describing the IDT.
+ */
 void __attribute__((cdecl)) x86_IDT_Load(IDTDescriptor* idtDescriptor);
 
 /**

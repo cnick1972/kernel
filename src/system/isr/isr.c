@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stddef.h>
 
+/** @brief High-level ISR handler table (vector-indexed). */
 ISRHandler g_ISRHandlers[256];
 
+/** @brief Human-readable names for processor exceptions. */
 static const char* const g_Exceptions[] = {
     "Divide by zero error",
     "Debug",
@@ -42,6 +44,7 @@ static const char* const g_Exceptions[] = {
     ""
 };
 
+/** @brief Assembly stub that populates the IDT with ISR entries. */
 void x86_ISR_InitializeGates();
 
 /**

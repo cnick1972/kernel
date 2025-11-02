@@ -1,22 +1,42 @@
 #include <gdt.h>
 #include <stdint.h>
 
+typedef struct GDTDescriptor GDTDescriptor;
+
+/**
+ * @brief Assembly helper that loads a GDT descriptor and resets segment registers.
+ *
+ * @param descriptor  Pointer to the GDT descriptor.
+ * @param codeSegment Selector to load into CS.
+ * @param dataSegment Selector to load into the remaining segment registers.
+ */
+void __attribute__((cdecl)) x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
+
+/**
+ * @brief Layout of an individual GDT entry (segment descriptor).
+ */
 typedef struct
 {
-    uint16_t LimitLow;                  // limit (bits 0-15)
-    uint16_t BaseLow;                   // base (bits 0-15)
-    uint8_t BaseMiddle;                 // base (bits 16-23)
-    uint8_t Access;                     // access
-    uint8_t FlagsLimitHi;               // limit (bits 16-19) | flags
-    uint8_t BaseHigh;                   // base (bits 24-31)
+    uint16_t LimitLow;                  /**< Segment limit bits 0-15. */
+    uint16_t BaseLow;                   /**< Base address bits 0-15. */
+    uint8_t  BaseMiddle;                /**< Base address bits 16-23. */
+    uint8_t  Access;                    /**< Access rights and type field. */
+    uint8_t  FlagsLimitHi;              /**< High limit bits combined with flags. */
+    uint8_t  BaseHigh;                  /**< Base address bits 24-31. */
 } __attribute__((packed)) GDTEntry;
 
-typedef struct
+/**
+ * @brief Pseudo-descriptor passed to the LGDT instruction.
+ */
+struct GDTDescriptor
 {
-    uint16_t Limit;                     // sizeof(gdt) - 1
-    GDTEntry* Ptr;                      // address of GDT
-} __attribute__((packed)) GDTDescriptor;
+    uint16_t Limit;                     /**< Size of the GDT in bytes minus one. */
+    GDTEntry* Ptr;                      /**< Linear address of the first GDT entry. */
+} __attribute__((packed));
 
+/**
+ * @brief Access-byte helpers for GDT entries.
+ */
 typedef enum
 {
     GDT_ACCESS_CODE_READABLE                = 0x02,
@@ -40,6 +60,9 @@ typedef enum
 
 } GDT_ACCESS;
 
+/**
+ * @brief Flag helpers for GDT entries (upper four bits of the flags/limit byte).
+ */
 typedef enum 
 {
     GDT_FLAG_64BIT                          = 0x20,
@@ -66,6 +89,9 @@ typedef enum
     GDT_BASE_HIGH(base)                                             \
 }
 
+/**
+ * @brief Global descriptor table containing kernel code/data segments.
+ */
 GDTEntry g_GDT[] = {
     // NULL descriptor
     GDT_ENTRY(0, 0, 0, 0),
@@ -84,9 +110,10 @@ GDTEntry g_GDT[] = {
 
 };
 
+/**
+ * @brief Descriptor referencing the active GDT.
+ */
 GDTDescriptor g_GDTDescriptor = { sizeof(g_GDT) - 1, g_GDT};
-
-void __attribute__((cdecl)) x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
 
 /**
  * @brief Populate and load the kernel global descriptor table.
