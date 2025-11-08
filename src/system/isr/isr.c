@@ -4,6 +4,7 @@
 #include <x86.h>
 #include <stdio.h>
 #include <stddef.h>
+#include <kerndef.h>
 
 /** @brief High-level ISR handler table (vector-indexed). */
 ISRHandler g_ISRHandlers[256];
@@ -63,7 +64,7 @@ void x86_ISR_Initialize()
  *
  * @param regs Register snapshot captured on interrupt entry.
  */
-void __attribute__((cdecl)) x86_ISR_Handler(Registers* regs)
+void KERNEL_CDECL x86_ISR_Handler(Registers* regs)
 {
     if(g_ISRHandlers[regs->interrupt] != NULL)
         g_ISRHandlers[regs->interrupt](regs);

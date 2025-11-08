@@ -1,6 +1,7 @@
 #include <idt.h>
 #include <stdint.h>
 #include <binary.h>
+#include <kerndef.h>
 
 /**
  * @brief Interrupt descriptor table entry layout.
@@ -38,7 +39,7 @@ IDTDescriptor g_IDTDescriptor = { sizeof(g_IDT) - 1, g_IDT };
  *
  * @param idtDescriptor Pointer to the descriptor describing the IDT.
  */
-void __attribute__((cdecl)) x86_IDT_Load(IDTDescriptor* idtDescriptor);
+void KERNEL_CDECL x86_IDT_Load(IDTDescriptor* idtDescriptor);
 
 /**
  * @brief Configure a single IDT gate.

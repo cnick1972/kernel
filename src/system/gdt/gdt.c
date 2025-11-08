@@ -1,5 +1,6 @@
 #include <gdt.h>
 #include <stdint.h>
+#include <kerndef.h>
 
 typedef struct GDTDescriptor GDTDescriptor;
 
@@ -10,7 +11,7 @@ typedef struct GDTDescriptor GDTDescriptor;
  * @param codeSegment Selector to load into CS.
  * @param dataSegment Selector to load into the remaining segment registers.
  */
-void __attribute__((cdecl)) x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
+void KERNEL_CDECL x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
 
 /**
  * @brief Layout of an individual GDT entry (segment descriptor).
