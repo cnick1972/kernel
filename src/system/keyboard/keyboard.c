@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <x86.h>
 
+/** @brief Simple UK keymap for set 1 scancodes. */
 static const char uk_keymap[128] = {
     0,   27, '1', '2', '3', '4', '5', '6',    // 0x00 - 0x07
     '7', '8', '9', '0', '-', '=', '\b', '\t', // 0x08 - 0x0F
@@ -17,6 +18,9 @@ static const char uk_keymap[128] = {
     0,   0,   0,   0,   0,   0,   0,   0      // 0x58 - 0x5F
 };
 
+/**
+ * @brief Basic PS/2 keyboard interrupt handler.
+ */
 void keyb_int_handler(Registers* regs)
 {
     uint8_t scancode;

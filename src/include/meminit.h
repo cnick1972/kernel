@@ -15,19 +15,27 @@ typedef uint32_t * page_table_t;
 extern void * PageDirectoryVirtualAddress;
 extern void * PageDirectoryPhysicalAddress;
 
-
+/**
+ * @brief Cache the Multiboot memory map and make it accessible.
+ */
 void init_memory(multiboot_info* mbi);
+
+/**
+ * @brief Retrieve the number of entries in the cached memory map.
+ */
 uint32_t get_mmap_count();
+
+/**
+ * @brief Get a pointer to the cached Multiboot memory map.
+ */
 multiboot_mmap_entry* get_mmap();
 
-// Physical Memory manager interface functions
-// These are located in pmm.c
+// Physical Memory manager interface functions (implemented in pmm.c)
 
 uint32_t init_pmm_allocator(uint32_t memsize);
 uintptr_t allocate_physical_page();
 void mark_unavailable(uint32_t page_number);
-void mark_free(uint32_t page_number) ;
-
+void mark_free(uint32_t page_number);
 
 page_directory_t initialize_kernel_page_directory();
 
@@ -46,7 +54,6 @@ uint32_t make_page_table_entry(void* physical_address,
     enum page_privilege_t privilege,
     enum page_permissions_t permissions,
     bool present);
-
 
 uint32_t num_present_pages(page_directory_t pd);
 void* page_table_virtual_address(uint16_t page_table_number);

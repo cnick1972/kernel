@@ -1,10 +1,16 @@
 #include <psf_font.h>
+#include <stdint.h>
 
 #define PSF1_MAGIC 0x0436
 
 extern uint8_t _binary_src_fonts_Lat15_Terminus16_psf_start[];
 extern uint8_t _binary_src_fonts_Lat15_Terminus16_psf_end[];
 
+/**
+ * @brief Load the built-in PSF font embedded via objcopy.
+ *
+ * @return Populated font structure, or NULL pointers on failure.
+ */
 psf1_font_t load_psf1_font()
 {
     psf1_font_t font;

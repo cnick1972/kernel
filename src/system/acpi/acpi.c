@@ -37,6 +37,9 @@ typedef struct
 } __attribute__((packed)) RSDT;
 
 
+/**
+ * @brief Search conventional BIOS memory for the ACPI RSDP structure.
+ */
 void* find_rsdp()
 {
     for(uint32_t addr = RSDP_SEARCH_START; addr < RSDP_SEARCH_END; addr += RSDP_SEARCH_STEP) {

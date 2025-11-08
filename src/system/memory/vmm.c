@@ -6,10 +6,13 @@
 #include <x86.h>
 
 
-#define KERNEL_PAGE_TABLE_NUMBER 768
+#define KERNEL_PAGE_TABLE_NUMBER 768 /**< Kernel virtual address PDE index. */
 #define PAGE_OFFSET_BITS 12
 #define PAGE_SIZE_BYTES 4096
 
+/**
+ * @brief Construct a page directory entry.
+ */
 uint32_t make_page_directory_entry(void* page_table_physical_address,
                                    enum page_size_t page_size,
                                    bool cache_disabled,
@@ -34,6 +37,9 @@ bool get_present_from_pde(uint32_t pde)
     return pde & 0x1;
 }
 
+/**
+ * @brief Construct a page table entry.
+ */
 uint32_t make_page_table_entry(void* physical_address,
                             bool global,
                             bool cache_disabled,
@@ -58,6 +64,9 @@ bool get_present_from_pte(uint32_t pte)
     return pte & 0x1;
 }
 
+/**
+ * @brief Compute the recursive-mapping virtual address of a page table.
+ */
 void* page_table_virtual_address(uint16_t page_table_number)
 {
     uint32_t virtual_address = 0xffc00000;
@@ -67,6 +76,9 @@ void* page_table_virtual_address(uint16_t page_table_number)
     return (void*) virtual_address;
 }
 
+/**
+ * @brief Create the initial kernel page directory and identity mappings.
+ */
 page_directory_t initialize_kernel_page_directory()
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
@@ -105,6 +117,9 @@ page_directory_t initialize_kernel_page_directory()
     return pd;
 }
 
+/**
+ * @brief Count the number of present page-directory entries.
+ */
 uint32_t num_present_pages(page_directory_t pd)
 {
     uint32_t num = 0;
@@ -120,6 +135,9 @@ uint32_t num_present_pages(page_directory_t pd)
     return num;
 }
 
+/**
+ * @brief Demand-map page fault handler.
+ */
 void PageFaulthandler(Registers* regs)
 {
     
@@ -176,6 +194,9 @@ void PageFaulthandler(Registers* regs)
     //kprintf("In handler 0x%08x\n", cr2);
 }
 
+/**
+ * @brief Establish a 4 KiB mapping between a physical and virtual address.
+ */
 bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
@@ -227,6 +248,9 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
 }
 
 
+/**
+ * @brief Map a contiguous region using 4 MiB pages.
+ */
 bool Map4MBPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress, size_t size)
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;

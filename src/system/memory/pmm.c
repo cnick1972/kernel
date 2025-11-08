@@ -35,6 +35,9 @@ uint32_t bitmapsize;
 uint32_t bitmap_dwords;
 uint32_t free_pages = 0;
 
+/**
+ * @brief Mark a page frame as free in the bitmap.
+ */
 void mark_free(uint32_t page_number) 
 {
     uint32_t index = page_number >> 5;
@@ -50,6 +53,9 @@ void mark_free(uint32_t page_number)
     pmm_bitmap[index] = value; 
 }
 
+/**
+ * @brief Mark a page frame as unavailable/reserved.
+ */
 void mark_unavailable(uint32_t page_number)
 {
     uint32_t index = page_number >> 5;
@@ -66,12 +72,12 @@ void mark_unavailable(uint32_t page_number)
     pmm_bitmap[index] = value & ~mask;
 }
 
-uint32_t page_number(uint32_t address)
+static uint32_t page_number(uint32_t address)
 {
     return address >> PAGE_OFFSET_BITS;
 }
 
-uint32_t round_up_to_nearest_page_start(uint32_t address)
+static uint32_t round_up_to_nearest_page_start(uint32_t address)
 {
     if((address & 0xfffff000) != address)
     {
@@ -81,17 +87,17 @@ uint32_t round_up_to_nearest_page_start(uint32_t address)
     return address;
 }
 
-uint32_t round_down_to_nearest_page_start(uint32_t address)
+static uint32_t round_down_to_nearest_page_start(uint32_t address)
 {
     return address &= 0xfffff000;
 }
 
 
 /**
- * @brief 
- * 
- * @param memsize the size of the physical memory in KB
- * @return uint32_t The size if the physical memory bitmap
+ * @brief Initialize the physical memory manager bitmap.
+ *
+ * @param memsize Physical memory size reported by Multiboot (KB).
+ * @return Number of free pages discovered.
  */
 uint32_t init_pmm_allocator(uint32_t memsize)
 {
@@ -145,6 +151,11 @@ uint32_t init_pmm_allocator(uint32_t memsize)
     return free_pages;
 }
 
+/**
+ * @brief Allocate a free 4 KiB page frame.
+ *
+ * @return Physical address of the page or 0 if none available.
+ */
 uintptr_t allocate_physical_page()
 {
     for(uint32_t index = 0; index < bitmap_dwords; index++)

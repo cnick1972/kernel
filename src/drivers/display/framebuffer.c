@@ -6,23 +6,28 @@
 #include <stddef.h>
 #include <serial.h>
 
+/** @brief Loaded PSF font used for framebuffer text rendering. */
 psf1_font_t font;
+/** @brief Number of 4 KiB pages needed for the framebuffer mapping. */
 uint32_t TotalPagesRequired;
+/** @brief Global framebuffer descriptor. */
 Framebuffer fb = {NULL, 0, 0, 0, 0};
 
+/** @brief Character backing buffer for framebuffer console text. */
 uint8_t* CharBuffer = (uint8_t*)0xc1000000;
 
-uint8_t columns;
-uint8_t rows;
+static uint8_t columns;
+static uint8_t rows;
 
-int fb_ScreenX = 0, fb_ScreenY = 0;
-int c_ScreenX = 0, c_screenY = 0;
-
-
+static int fb_ScreenX = 0, fb_ScreenY = 0;
+static int c_ScreenX = 0, c_screenY = 0;
 
 #define FONT_HEIGHT     16
 #define FONT_WIDTH      8
 
+/**
+ * @brief Initialize framebuffer mappings and prepare the console renderer.
+ */
 void InitFramebuffer(multiboot_info* mbi)
 {
     fb.address = (void*)(uint32_t)mbi->framebuffer_addr;
@@ -75,12 +80,28 @@ void InitFramebuffer(multiboot_info* mbi)
     SerialPrintf("Font magic: 0x%04x, Mode: %d, Size: %d\n", font.header->magic, font.header->mode, font.header->charsize);
 }
 
+/**
+ * @brief Write a pixel to the framebuffer.
+ *
+ * @param x     X coordinate in pixels.
+ * @param y     Y coordinate in pixels.
+ * @param color ARGB color value.
+ */
 void putpixel(uint32_t x, uint32_t y, uint32_t color)
 {
     uint32_t* pixel = (uint32_t*)((uint8_t*)fb.address + y * fb.pitch + x * 4);
     *pixel = color;
 }
 
+/**
+ * @brief Draw a single glyph at the specified framebuffer position.
+ *
+ * @param c        Character to draw.
+ * @param x        X coordinate in pixels.
+ * @param y        Y coordinate in pixels.
+ * @param fg_color Foreground color.
+ * @param bg_color Background color.
+ */
 void drawchar(char c, uint32_t x, uint32_t y, uint32_t fg_color, uint32_t bg_color)
 {
     uint8_t* glyph = font.glyphs +((uint8_t)c * font.header->charsize);
@@ -97,6 +118,9 @@ void drawchar(char c, uint32_t x, uint32_t y, uint32_t fg_color, uint32_t bg_col
     }
 }
 
+/**
+ * @brief Fill the framebuffer with the default background colour.
+ */
 void fb_clrscr()
 {
     uint32_t* frame = fb.address;
@@ -105,6 +129,11 @@ void fb_clrscr()
 }
 
 
+/**
+ * @brief Render a character and advance the framebuffer cursor.
+ *
+ * @param c Character to render.
+ */
 void fb_putchar(char c)
 {
     switch(c)

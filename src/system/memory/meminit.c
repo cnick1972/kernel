@@ -3,11 +3,16 @@
 #include <multiboot.h>
 
 
+/** @brief Cached Multiboot memory map entries. */
 multiboot_mmap_entry g_mmap[32];
+/** @brief Number of valid entries currently cached. */
 uint32_t g_mmap_count;
 
 #define MAX_MMAP_ENTRIES (sizeof(g_mmap) / sizeof(g_mmap[0]))
 
+/**
+ * @brief Cache the Multiboot-supplied memory map for later use.
+ */
 void init_memory(multiboot_info* mbi)
 {
     uint32_t entries = mbi->mmap_length / sizeof(multiboot_mmap_entry);

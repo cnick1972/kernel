@@ -1,6 +1,7 @@
 #include <multiboot.h>
 #include <memory.h>
 
+/** @brief Cached copy of the Multiboot information block. */
 multiboot_info g_mbi;
 
 void StoreMultiboot(multiboot_info* mbi)

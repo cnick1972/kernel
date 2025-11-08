@@ -133,5 +133,12 @@ typedef struct {
 
 
 
+/**
+ * @brief Retrieve the cached copy of the Multiboot information structure.
+ */
 multiboot_info* GetMultiboot();
+
+/**
+ * @brief Copy the Multiboot information structure for later use.
+ */
 void StoreMultiboot(multiboot_info* mbi);

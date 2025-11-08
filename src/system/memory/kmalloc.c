@@ -21,11 +21,14 @@ page_directory_t pd = (page_directory_t) PAGE_DIRECTORY_VIRTUAL_ADDRESS;
 void* ptrHeapStart = (void*)0xd0000000;
 uint32_t HeapSize = 0x1000;
 
+/**
+ * @brief Header prepended to each heap allocation.
+ */
 typedef struct block_t
 {
-    size_t size;
-    struct block_t *next;
-    int free;
+    size_t size;           /**< Payload size in bytes. */
+    struct block_t *next;  /**< Next block in the free list. */
+    int free;              /**< Non-zero if block is free. */
 } block_t;
  
 
@@ -33,11 +36,17 @@ typedef struct block_t
 
 static block_t *free_list = NULL;
 
+/**
+ * @brief Round value up to the requested alignment.
+ */
 static size_t align_up(size_t value, size_t alignment)
 {
     return (value + alignment - 1) & ~(alignment - 1);
 }
 
+/**
+ * @brief Split a free block if it is large enough to satisfy a request.
+ */
 static void split_block(block_t* block, size_t size)
 {
     if(block->size  >= size + BLOCK_SIZE + ALLIGNMENT) {
@@ -51,6 +60,9 @@ static void split_block(block_t* block, size_t size)
     }
 }
 
+/**
+ * @brief Allocate heap memory.
+ */
 void* kmalloc(size_t size)
 {
     size = align_up(size, ALLIGNMENT);
@@ -82,6 +94,9 @@ void* kmalloc(size_t size)
     return NULL;
 }
 
+/**
+ * @brief Free heap memory previously obtained from kmalloc.
+ */
 void _kfree(void **ptr) {
     if (!ptr || !*ptr) {
         return;
@@ -104,6 +119,9 @@ void _kfree(void **ptr) {
     //kprintf("here 0x%08x\n", *ptr);
 }
 
+/**
+ * @brief Dump the current heap state for debugging.
+ */
 void debug_heap() {
     kprintf("Heap layout:\n");
 

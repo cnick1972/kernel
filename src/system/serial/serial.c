@@ -4,6 +4,9 @@
 
 #define COM1 0x3f8
 
+/**
+ * @brief Initialize COM1 (0x3F8) for 115200 8-N-1 operation.
+ */
 void InitSerial()
 {
     x86_outb(COM1 +1, 0x00);
@@ -15,11 +18,14 @@ void InitSerial()
     x86_outb(COM1 +4, 0x0b);      
 }
 
-uint8_t SerialIsTransmitEmpty()
+static uint8_t SerialIsTransmitEmpty()
 {
     return x86_inb(COM1 + 5) & 0x20;
 }
 
+/**
+ * @brief Blocking write of a single character to COM1.
+ */
 void SerialWriteChar(char c)
 {
     while(!SerialIsTransmitEmpty());
@@ -34,7 +40,10 @@ void SerialWriteString(const char* str) {
     }
 }
 
-void SerialPrintf(const char* fmt, ...)
+/**
+ * @brief Printf-style formatted string over the serial console.
+ */
+void SerialPrintf(const char* fmt, ...) 
 {
     char buf[512];
     va_list args;

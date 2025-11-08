@@ -1,6 +1,9 @@
 #include <memory.h>
 
 
+/**
+ * @brief Copy a block of memory.
+ */
 void* memcpy(void* dst, const void* src, size_t num)
 {
     uint8_t* u8Dst = (uint8_t *)dst;
@@ -12,6 +15,9 @@ void* memcpy(void* dst, const void* src, size_t num)
     return dst;
 }
 
+/**
+ * @brief Fill memory with a constant byte value.
+ */
 void * memset(void * ptr, int value, size_t num)
 {
     uint8_t* u8Ptr = (uint8_t *)ptr;
@@ -22,6 +28,9 @@ void * memset(void * ptr, int value, size_t num)
     return ptr;
 }
 
+/**
+ * @brief Compare two memory regions.
+ */
 int memcmp(const void* ptr1, const void* ptr2, size_t num)
 {
     const uint8_t* u8Ptr1 = (const uint8_t *)ptr1;
