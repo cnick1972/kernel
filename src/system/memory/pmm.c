@@ -1,12 +1,10 @@
 #include <meminit.h>
 #include <memory.h>
-#include <stdio.h>
 
-#define BLOCK_SIZE          4096
-#define PAGE_SIZE           4096
+#define BLOCK_SIZE          PAGE_SIZE_BYTES
+#define PAGE_SIZE           PAGE_SIZE_BYTES
 #define PAGE_SIZE_DWORDS    1024
 #define PAGES_PER_BYTE      8
-#define PAGE_OFFSET_BITS    12
 
 extern uint32_t kernel_pmm_virtual_start;    // location of pmm bitmap
 extern uint32_t kernel_pmm_physical_end;
@@ -14,9 +12,9 @@ extern uint32_t kernel_pmm_physical_start;
 extern uint8_t kernel_physical_start;
 extern uint8_t kernel_physical_end;
 
-static	uint32_t	pmm_memory_size = 0;
-static	uint32_t	pmm_used_blocks=0;
-static	uint32_t	pmm_max_blocks = 0;
+static uint32_t pmm_memory_size = 0;
+static uint32_t pmm_used_blocks = 0;
+static uint32_t pmm_max_blocks = 0;
 
 
 /**
@@ -29,16 +27,16 @@ static	uint32_t	pmm_max_blocks = 0;
  * to 1, if it was unavailabe, then the bit would be set to 0
  * 
  */
-static	uint32_t*	pmm_bitmap = &kernel_pmm_virtual_start;
+static uint32_t* pmm_bitmap = &kernel_pmm_virtual_start;
 
-uint32_t bitmapsize;
-uint32_t bitmap_dwords;
-uint32_t free_pages = 0;
+static uint32_t bitmap_size_bytes;
+static uint32_t bitmap_dwords;
+static uint32_t free_pages = 0;
 
 /**
  * @brief Mark a page frame as free in the bitmap.
  */
-void mark_free(uint32_t page_number) 
+void pmm_mark_page_free(uint32_t page_number) 
 {
     uint32_t index = page_number >> 5;
     uint32_t bit = page_number & 0b11111;
@@ -56,7 +54,7 @@ void mark_free(uint32_t page_number)
 /**
  * @brief Mark a page frame as unavailable/reserved.
  */
-void mark_unavailable(uint32_t page_number)
+void pmm_mark_page_reserved(uint32_t page_number)
 {
     uint32_t index = page_number >> 5;
     uint32_t bit = page_number & 0b11111;
@@ -72,7 +70,7 @@ void mark_unavailable(uint32_t page_number)
     pmm_bitmap[index] = value & ~mask;
 }
 
-static uint32_t page_number(uint32_t address)
+static uint32_t page_number_from_address(uint32_t address)
 {
     return address >> PAGE_OFFSET_BITS;
 }
@@ -99,7 +97,7 @@ static uint32_t round_down_to_nearest_page_start(uint32_t address)
  * @param memsize Physical memory size reported by Multiboot (KB).
  * @return Number of free pages discovered.
  */
-uint32_t init_pmm_allocator(uint32_t memsize)
+uint32_t pmm_init_allocator(uint32_t memsize)
 {
     //kprintf("Mem size: 0x%08x\n", memsize * 1024);
     pmm_memory_size = memsize;
@@ -108,14 +106,14 @@ uint32_t init_pmm_allocator(uint32_t memsize)
 
     // calculate how big the bitmap is
 
-    bitmapsize = pmm_max_blocks / PAGES_PER_BYTE;
-    bitmap_dwords = (bitmapsize + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+    bitmap_size_bytes = pmm_max_blocks / PAGES_PER_BYTE;
+    bitmap_dwords = (bitmap_size_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
     
     //Set all blocks to unavailable, the free block will be switch on later
     memset(pmm_bitmap, 0x00, pmm_max_blocks / PAGES_PER_BYTE);
 
-    multiboot_mmap_entry* mmap = get_mmap();
-    uint8_t memory_entries = get_mmap_count();
+    multiboot_mmap_entry* mmap = memory_get_mmap();
+    uint8_t memory_entries = memory_get_mmap_count();
 
     for(int i = 0; i < memory_entries; i++)
     {
@@ -123,14 +121,14 @@ uint32_t init_pmm_allocator(uint32_t memsize)
         {
             uint32_t first_addr = mmap[i].addr_low;
             uint32_t one_past_last_address = first_addr + mmap[i].len_low;
-            uint32_t first_full_page = page_number(round_up_to_nearest_page_start(first_addr));
-            uint32_t one_past_last_full_page = page_number(round_down_to_nearest_page_start(one_past_last_address));
+            uint32_t first_full_page = page_number_from_address(round_up_to_nearest_page_start(first_addr));
+            uint32_t one_past_last_full_page = page_number_from_address(round_down_to_nearest_page_start(one_past_last_address));
 
             for(uint32_t j = first_full_page; j < one_past_last_full_page; j++)
             {
                 if(j > PAGE_SIZE_DWORDS)
                 {
-                    mark_free(j);
+                    pmm_mark_page_free(j);
                 }
             }
         }
@@ -140,12 +138,12 @@ uint32_t init_pmm_allocator(uint32_t memsize)
         }
     }
 
-    uint32_t first_partial_page = page_number(round_down_to_nearest_page_start((uint32_t)&kernel_physical_start));
-    uint32_t one_past_last_partial_page = page_number(round_up_to_nearest_page_start((uint32_t)&kernel_pmm_physical_end));
+    uint32_t first_partial_page = page_number_from_address(round_down_to_nearest_page_start((uint32_t)&kernel_physical_start));
+    uint32_t one_past_last_partial_page = page_number_from_address(round_up_to_nearest_page_start((uint32_t)&kernel_pmm_physical_end));
 
     for(uint32_t i = first_partial_page; i < one_past_last_partial_page; i++)
     {
-        mark_unavailable(i);
+        pmm_mark_page_reserved(i);
     }
  
     return free_pages;
@@ -156,7 +154,7 @@ uint32_t init_pmm_allocator(uint32_t memsize)
  *
  * @return Physical address of the page or 0 if none available.
  */
-uintptr_t allocate_physical_page()
+uintptr_t pmm_allocate_page()
 {
     for(uint32_t index = 0; index < bitmap_dwords; index++)
     {
@@ -168,7 +166,7 @@ uintptr_t allocate_physical_page()
                 if((pmm_bitmap[index] & (1 << bit)) != 0)
                 {
                     uint32_t page_number = index * 32 + bit;
-                    mark_unavailable(page_number);
+                    pmm_mark_page_reserved(page_number);
                     uintptr_t page_start = (uintptr_t) (page_number << PAGE_OFFSET_BITS);
                     return page_start;
                 }

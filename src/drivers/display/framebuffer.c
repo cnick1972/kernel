@@ -9,12 +9,12 @@
 /** @brief Loaded PSF font used for framebuffer text rendering. */
 psf1_font_t font;
 /** @brief Number of 4 KiB pages needed for the framebuffer mapping. */
-uint32_t TotalPagesRequired;
+uint32_t total_pages_required;
 /** @brief Global framebuffer descriptor. */
 Framebuffer fb = {NULL, 0, 0, 0, 0};
 
 /** @brief Character backing buffer for framebuffer console text. */
-uint8_t* CharBuffer = (uint8_t*)0xc1000000;
+uint8_t* char_buffer = (uint8_t*)0xc1000000;
 
 static uint8_t columns;
 static uint8_t rows;
@@ -42,11 +42,11 @@ void InitFramebuffer(multiboot_info* mbi)
     for(int i = 0; i < 4; i++)
     {
         
-        MapPhysicalToVirtual((void*)allocate_physical_page(), CharBuffer + i * 4096);
+        vmm_map_physical_to_virtual((uint8_t*)(uintptr_t)pmm_allocate_page(), char_buffer + i * 4096);
     }
 
     
-    uint32_t FrameBufferVirtualAddress = 0xe0000000;
+    uint32_t framebuffer_virtual_address = 0xe0000000;
 
 
     // currently the fb.address is a physical address, it needs to be mapped to
@@ -58,21 +58,21 @@ void InitFramebuffer(multiboot_info* mbi)
 
     // We should just alocate 4MB pages for video memory
 
-    int BytesPerPixel = fb.bpp >> 3;
-    uint32_t TotalScreenPixels = fb.height * fb.width;
-    TotalPagesRequired = (TotalScreenPixels * BytesPerPixel) / 4096;
-    if((TotalScreenPixels * BytesPerPixel) % 4096)
-        TotalPagesRequired++;
+    int bytes_per_pixel = fb.bpp >> 3;
+    uint32_t total_screen_pixels = fb.height * fb.width;
+    total_pages_required = (total_screen_pixels * bytes_per_pixel) / 4096;
+    if((total_screen_pixels * bytes_per_pixel) % 4096)
+        total_pages_required++;
 
-    uint8_t FourMBPagesRequied = TotalPagesRequired / 1024;
-    if(TotalPagesRequired % 1024)
-        FourMBPagesRequied++;
+    uint8_t four_mb_pages_required = total_pages_required / 1024;
+    if(total_pages_required % 1024)
+        four_mb_pages_required++;
 
-    Map4MBPhysicalToVirtual(fb.address, (uint8_t*)FrameBufferVirtualAddress, FourMBPagesRequied * 4);
+    vmm_map_4mb_physical_to_virtual((uint8_t*)fb.address, (uint8_t*)framebuffer_virtual_address, four_mb_pages_required * 4);
     
     // set the framebuffer address in the framebuffer structure to the virtual address
 
-    fb.address = (void*)FrameBufferVirtualAddress;
+    fb.address = (void*)framebuffer_virtual_address;
 
     // get the builtin font
     font = load_psf1_font();
@@ -148,7 +148,7 @@ void fb_putchar(char c)
     default:
         drawchar(c, fb_ScreenX, fb_ScreenY, 0x00ffff00, 0x002366);
         fb_ScreenX += 8;
-        CharBuffer[c_screenY * columns + c_ScreenX] = c;
+        char_buffer[c_screenY * columns + c_ScreenX] = c;
         if(c_ScreenX++ > columns)
         {
             c_ScreenX = 0;

@@ -50,7 +50,7 @@ void* find_rsdp()
                 memset(sig, 0, 9);
                 memcpy(sig, rsdp->Signature, 8);
                 kprintf("Signature: %s Revision: %d, address: 0x%08x\n", sig, rsdp->revision, rsdp->rsdtAddress);
-                MapPhysicalToVirtual((uint8_t*)rsdp->rsdtAddress, (uint8_t*)0xe8000000);
+                vmm_map_physical_to_virtual((uint8_t*)rsdp->rsdtAddress, (uint8_t*)0xe8000000);
 
                 uint32_t vAddress = 0xe8000000;
 

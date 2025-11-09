@@ -1,25 +1,15 @@
 #include <memory.h>
-#include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include <meminit.h>
-#include <x86.h>
-
+#include <stdint.h>
 #include <serial.h>
 
-#define ALLIGNMENT 8
+#include <stdio.h>
 
-#define PAGE_DIRECTORY_VIRTUAL_ADDRESS 0xfffff000
+#define HEAP_ALIGNMENT 8
 
-
-
-typedef uint32_t * page_directory_t;
-typedef uint32_t * page_table_t;
-
-page_directory_t pd = (page_directory_t) PAGE_DIRECTORY_VIRTUAL_ADDRESS;
-
-void* ptrHeapStart = (void*)0xd0000000;
-uint32_t HeapSize = 0x1000;
+static void* heap_virtual_start = (void*)0xd0000000;
+static uint32_t heap_region_size = 0x1000;
 
 /**
  * @brief Header prepended to each heap allocation.
@@ -49,7 +39,7 @@ static size_t align_up(size_t value, size_t alignment)
  */
 static void split_block(block_t* block, size_t size)
 {
-    if(block->size  >= size + BLOCK_SIZE + ALLIGNMENT) {
+    if(block->size  >= size + BLOCK_SIZE + HEAP_ALIGNMENT) {
         block_t* new_block = (block_t*)((uint8_t*)block + BLOCK_SIZE + size);
         new_block->size = block->size - size - BLOCK_SIZE;
         new_block->free = 1;
@@ -65,14 +55,14 @@ static void split_block(block_t* block, size_t size)
  */
 void* kmalloc(size_t size)
 {
-    size = align_up(size, ALLIGNMENT);
+    size = align_up(size, HEAP_ALIGNMENT);
 
     SerialPrintf("Here 1\n");
 
     if(!free_list) {
         SerialPrintf("Here 2\n");
-        free_list = (block_t *)ptrHeapStart;
-        free_list->size = HeapSize - BLOCK_SIZE;
+        free_list = (block_t *)heap_virtual_start;
+        free_list->size = heap_region_size - BLOCK_SIZE;
         free_list->next = NULL;
         free_list->free = 1;
     }
@@ -97,12 +87,13 @@ void* kmalloc(size_t size)
 /**
  * @brief Free heap memory previously obtained from kmalloc.
  */
-void _kfree(void **ptr) {
-    if (!ptr || !*ptr) {
+void kfree(void **ptr_handle)
+{
+    if (!ptr_handle || !*ptr_handle) {
         return;
     }
 
-    block_t *block = (block_t *)((uint8_t *)*ptr - BLOCK_SIZE);
+    block_t *block = (block_t *)((uint8_t *)*ptr_handle - BLOCK_SIZE);
     block->free = 1;
 
     block_t *current = free_list;
@@ -115,14 +106,15 @@ void _kfree(void **ptr) {
         }
     }
     //kprintf("here 0x%08x\n", *ptr);
-    *ptr = NULL;
+    *ptr_handle = NULL;
     //kprintf("here 0x%08x\n", *ptr);
 }
 
 /**
  * @brief Dump the current heap state for debugging.
  */
-void debug_heap() {
+void kheap_debug_dump(void)
+{
     kprintf("Heap layout:\n");
 
     block_t *current = free_list;

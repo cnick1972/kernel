@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define kfree(a) _kfree((void**)&a)
-
 /**
  * @brief Copy a block of memory.
  *
@@ -46,11 +44,11 @@ void* kmalloc(size_t size);
 /**
  * @brief Free heap memory previously allocated via kmalloc.
  *
- * @param ptr Pointer-to-pointer returned by kmalloc (cleared on return).
+ * @param ptr_handle Pointer-to-pointer returned by kmalloc (cleared on return).
  */
-void _kfree(void **ptr);
+void kfree(void **ptr_handle);
 
 /**
  * @brief Dump the current heap layout to the console.
  */
-void debug_heap();
+void kheap_debug_dump(void);

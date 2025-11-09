@@ -1,7 +1,7 @@
 #include <meminit.h>
+#include <paging.h>
 #include <stdbool.h>
 #include <memory.h>
-#include <stdio.h>
 #include <isr.h>
 #include <x86.h>
 
@@ -13,7 +13,7 @@
 /**
  * @brief Construct a page directory entry.
  */
-uint32_t make_page_directory_entry(void* page_table_physical_address,
+uint32_t vmm_make_page_directory_entry(void* page_table_physical_address,
                                    enum page_size_t page_size,
                                    bool cache_disabled,
                                    bool write_through,
@@ -40,7 +40,7 @@ bool get_present_from_pde(uint32_t pde)
 /**
  * @brief Construct a page table entry.
  */
-uint32_t make_page_table_entry(void* physical_address,
+uint32_t vmm_make_page_table_entry(void* physical_address,
                             bool global,
                             bool cache_disabled,
                             bool write_through,
@@ -67,7 +67,7 @@ bool get_present_from_pte(uint32_t pte)
 /**
  * @brief Compute the recursive-mapping virtual address of a page table.
  */
-void* page_table_virtual_address(uint16_t page_table_number)
+void* vmm_page_table_virtual_address(uint16_t page_table_number)
 {
     uint32_t virtual_address = 0xffc00000;
 
@@ -79,10 +79,10 @@ void* page_table_virtual_address(uint16_t page_table_number)
 /**
  * @brief Create the initial kernel page directory and identity mappings.
  */
-page_directory_t initialize_kernel_page_directory()
+page_directory_t vmm_initialize_kernel_page_directory()
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
-    uint32_t pde = make_page_directory_entry((void*) &PageDirectoryPhysicalAddress, 
+    uint32_t pde = vmm_make_page_directory_entry((void*) &PageDirectoryPhysicalAddress, 
                                              FOUR_KB, 
                                              false, 
                                              false, 
@@ -92,8 +92,8 @@ page_directory_t initialize_kernel_page_directory()
 
     pd[1023] = pde;
 
-    void* page_table_physical_address = (void*)allocate_physical_page();
-    pd[KERNEL_PAGE_TABLE_NUMBER] = make_page_directory_entry((void*) page_table_physical_address, 
+    void* page_table_physical_address = (void*)pmm_allocate_page();
+    pd[KERNEL_PAGE_TABLE_NUMBER] = vmm_make_page_directory_entry((void*) page_table_physical_address, 
                                                              FOUR_KB, 
                                                              false, 
                                                              false, 
@@ -101,11 +101,11 @@ page_directory_t initialize_kernel_page_directory()
                                                              READ_WRITE, 
                                                              true);
                                                              
-    page_table_t pt = (page_table_t) page_table_virtual_address(KERNEL_PAGE_TABLE_NUMBER);
+    page_table_t pt = (page_table_t) vmm_page_table_virtual_address(KERNEL_PAGE_TABLE_NUMBER);
     for(uint16_t i = 0; i < 1024; i++)
     {
         void* page_physical_address = (void*) (i * PAGE_SIZE_BYTES);
-        pt[i] = make_page_table_entry(page_physical_address, 
+        pt[i] = vmm_make_page_table_entry(page_physical_address, 
                                              false, 
                                              false, 
                                              false, 
@@ -120,7 +120,7 @@ page_directory_t initialize_kernel_page_directory()
 /**
  * @brief Count the number of present page-directory entries.
  */
-uint32_t num_present_pages(page_directory_t pd)
+uint32_t vmm_count_present_pages(page_directory_t pd)
 {
     uint32_t num = 0;
     for(int i = 0; i < 1024; i++) {
@@ -138,7 +138,7 @@ uint32_t num_present_pages(page_directory_t pd)
 /**
  * @brief Demand-map page fault handler.
  */
-void PageFaulthandler(Registers* regs)
+void vmm_page_fault_handler(Registers* regs)
 {
     
 
@@ -149,15 +149,15 @@ void PageFaulthandler(Registers* regs)
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
 
     // do i have a page directory entry for the memory requested?
-    uint32_t directoryEntry = cr2 >> 22;
+    uint32_t directory_entry = cr2 >> 22;
     page_table_t pt;
 
-    if(!get_present_from_pde(pd[directoryEntry]))
+    if(!get_present_from_pde(pd[directory_entry]))
     {
         
         // allocate a memory block for the required pde
-        uintptr_t newPage = allocate_physical_page();
-        uint32_t pde = make_page_directory_entry((void*) newPage, 
+        uintptr_t new_page = pmm_allocate_page();
+        uint32_t pde = vmm_make_page_directory_entry((void*) new_page, 
                         FOUR_KB, 
                         false, 
                         false, 
@@ -165,24 +165,24 @@ void PageFaulthandler(Registers* regs)
                         READ_WRITE, 
                         true);
 
-        pd[directoryEntry] = pde;
+        pd[directory_entry] = pde;
 
-        pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        pt = (page_table_t) vmm_page_table_virtual_address(directory_entry);
         memset(pt, 0, PAGE_SIZE_BYTES);
     }
     else
     {
-        pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        pt = (page_table_t) vmm_page_table_virtual_address(directory_entry);
     }
 
-    uint32_t tbentry = (cr2 >> 12) & 0x3ff;
+    uint32_t table_entry = (cr2 >> 12) & 0x3ff;
 
-    if(!get_present_from_pte(pt[tbentry]))
+    if(!get_present_from_pte(pt[table_entry]))
     {
 
-        uintptr_t newPage = allocate_physical_page();
+        uintptr_t new_page = pmm_allocate_page();
     
-        pt[tbentry] = make_page_table_entry((void*)newPage, 
+        pt[table_entry] = vmm_make_page_table_entry((void*)new_page, 
                         false, 
                         false, 
                         false, 
@@ -197,7 +197,7 @@ void PageFaulthandler(Registers* regs)
 /**
  * @brief Establish a 4 KiB mapping between a physical and virtual address.
  */
-bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
+bool vmm_map_physical_to_virtual(uint8_t* physical_address, uint8_t* virtual_address)
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
     
@@ -205,13 +205,18 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
     // Step 1 - Check is the requested virtual address is available
     // Step 1.1 see if there is a page directory for the request virtual address
 
-    uint32_t directoryEntry = (uint32_t)vAddress >> 22;
+    uint32_t directory_entry = (uint32_t)virtual_address >> 22;
     page_table_t pt;
+    bool mapped_new_entry = false;
 
-    if(!get_present_from_pde(pd[directoryEntry]))
+    if(!get_present_from_pde(pd[directory_entry]))
     {
-        uintptr_t newPage = allocate_physical_page();
-        uint32_t pde = make_page_directory_entry((void*) newPage, 
+        uintptr_t new_page = pmm_allocate_page();
+        if(new_page == 0)
+        {
+            return false;
+        }
+        uint32_t pde = vmm_make_page_directory_entry((void*) new_page, 
                                 FOUR_KB, 
                                 false, 
                                 false, 
@@ -219,31 +224,33 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
                                 READ_WRITE, 
                                 true);
 
-        pd[directoryEntry] = pde;
-        pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        pd[directory_entry] = pde;
+        pt = (page_table_t) vmm_page_table_virtual_address(directory_entry);
         memset(pt, 0, PAGE_SIZE_BYTES);
+        mapped_new_entry = true;
     }
     else
     {
-        pt = (page_table_t) page_table_virtual_address(directoryEntry);
+        pt = (page_table_t) vmm_page_table_virtual_address(directory_entry);
     }
 
-    uint32_t tbentry = ((uint32_t)vAddress >> 12) & 0x3ff;
+    uint32_t table_entry = ((uint32_t)virtual_address >> 12) & 0x3ff;
     
-    if(!get_present_from_pte(pt[tbentry]))
+    if(!get_present_from_pte(pt[table_entry]))
     {
-        pt[tbentry] = make_page_table_entry(pAddress, 
+        pt[table_entry] = vmm_make_page_table_entry(physical_address, 
                         false, 
                         false, 
                         false, 
                         SUPERVISOR, 
                         READ_WRITE, 
                         true);
+        mapped_new_entry = true;
     }
     //x86_ReloadPageDirectory();
 
 
-    return false;
+    return mapped_new_entry;
 
 }
 
@@ -251,26 +258,27 @@ bool MapPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress)
 /**
  * @brief Map a contiguous region using 4 MiB pages.
  */
-bool Map4MBPhysicalToVirtual(uint8_t* pAddress, uint8_t* vAddress, size_t size)
+bool vmm_map_4mb_physical_to_virtual(uint8_t* physical_address, uint8_t* virtual_address, size_t size)
 {
     page_directory_t pd = (page_directory_t) &PageDirectoryVirtualAddress;
 
-    uint32_t directoryEntry = (uint32_t)vAddress / 1024 / 4096;
+    uint32_t directory_entry = (uint32_t)virtual_address / 1024 / 4096;
 
-    int entries = size / 4;
+    int entries_required = size / 4;
     if(size % 4)
-        entries++;
+        entries_required++;
 
-    for(int i = 0; i < entries; i++)
+    for(int i = 0; i < entries_required; i++)
     {
-        uint32_t entry = (uint32_t)pAddress + (0x400000 * i) & 0xffc00000;
-        entry = entry + 0x83;
+        uint32_t entry = (uint32_t)physical_address + (0x400000 * i);
+        entry &= 0xffc00000;
+        entry |= 0x83;
     
-        pd[directoryEntry + i] = entry;
+        pd[directory_entry + i] = entry;
 
     }    
 
     x86_ReloadPageDirectory();
 
-    return false;
+    return true;
 }
