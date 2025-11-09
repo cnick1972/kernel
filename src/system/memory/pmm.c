@@ -117,10 +117,23 @@ uint32_t pmm_init_allocator(uint32_t memsize)
 
     for(int i = 0; i < memory_entries; i++)
     {
-        if(mmap[i].type == 1)
+        if(mmap[i].type == MULTIBOOT_MEMORY_AVAILABLE)
         {
-            uint32_t first_addr = mmap[i].addr_low;
-            uint32_t one_past_last_address = first_addr + mmap[i].len_low;
+            uint64_t region_start = mmap[i].addr;
+            uint64_t region_end = region_start + mmap[i].len;
+
+            if(region_start >= 0x100000000ULL)
+            {
+                continue;
+            }
+
+            if(region_end > 0x100000000ULL)
+            {
+                region_end = 0x100000000ULL;
+            }
+
+            uint32_t first_addr = (uint32_t)region_start;
+            uint32_t one_past_last_address = (uint32_t)region_end;
             uint32_t first_full_page = page_number_from_address(round_up_to_nearest_page_start(first_addr));
             uint32_t one_past_last_full_page = page_number_from_address(round_down_to_nearest_page_start(one_past_last_address));
 
@@ -131,10 +144,6 @@ uint32_t pmm_init_allocator(uint32_t memsize)
                     pmm_mark_page_free(j);
                 }
             }
-        }
-        else
-        {
-
         }
     }
 

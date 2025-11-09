@@ -1,25 +1,42 @@
 [bits 32]
 
-MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
-MEMINFO  equ  1 << 1            ; provide memory map
-VIDEO    equ  1 << 2            ; set video mode
-MBFLAGS  equ  MBALIGN | MEMINFO | VIDEO ; this is the Multiboot 'flag' field
-MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
-CHECKSUM equ -(MAGIC + MBFLAGS)   ; checksum of above, to prove we are multiboot
-
+MB2_MAGIC        equ  0xE85250D6
+MB2_ARCH_I386    equ  0
 KERNEL_VIRTUAL_BASE equ 0xC0000000
 
 section .multiboot
-align 4
-    dd MAGIC
-    dd MBFLAGS
-    dd CHECKSUM
-    dd 0, 0, 0, 0, 0
+align 8
+mb2_header_start:
+    dd MB2_MAGIC
+    dd MB2_ARCH_I386
+    dd mb2_header_end - mb2_header_start
+    dd -(MB2_MAGIC + MB2_ARCH_I386 + (mb2_header_end - mb2_header_start))
 
-    dd 0
+align 8
+framebuffer_tag:
+    dw 5                       ; MULTIBOOT_HEADER_TAG_FRAMEBUFFER
+    dw 0
+    dd framebuffer_tag_end - framebuffer_tag
     dd 1680
     dd 1050
     dd 32
+framebuffer_tag_end:
+
+align 8
+info_req_tag:
+    dw 4                       ; MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST
+    dw 0
+    dd info_req_tag_end - info_req_tag
+    dd 6                       ; MULTIBOOT_TAG_TYPE_MMAP
+info_req_tag_end:
+
+align 8
+end_tag:
+    dw 0
+    dw 0
+    dd 8
+
+mb2_header_end:
 
 section .bss
 align 16
@@ -28,6 +45,8 @@ stack_bottom:
 stack_top:
 
 section .text   
+
+extern kernel_physical_start
 
 global _start 
 _start:
@@ -40,17 +59,19 @@ _start:
     global PageDirectoryPhysicalAddress
     PageDirectoryPhysicalAddress equ (PageDirectoryVirtualAddress - KERNEL_VIRTUAL_BASE)
 
+    ; move address of initial_page_dir to the cr3 register
+    mov ecx, (PageDirectoryVirtualAddress - KERNEL_VIRTUAL_BASE)
+    mov cr3, ecx
+
     ; identity map the first page table (4 mb)
     ; update page directory page 0 to point to first 4Mb
+    mov dword [(PageDirectoryVirtualAddress - KERNEL_VIRTUAL_BASE)], 0x00000083
 
-    mov dword [(PageDirectoryVirtualAddress - 0xc0000000)], 0x00000083
-
-    ;  create a page directory entry point 0xc0000000 at 0x0
-    mov dword [(PageDirectoryVirtualAddress - 0xc0000000) + (768 * 4)], 0x00000083
-
-    ; move address of initial_page_dir to the cr3 register
-    mov ecx, (PageDirectoryVirtualAddress - 0xc0000000)
-    mov cr3, ecx
+    ;  create a page directory entry point 0xc0000000 at kernel physical base
+    mov eax, kernel_physical_start
+    and eax, 0xFFC00000
+    or  eax, 0x00000083
+    mov dword [(PageDirectoryVirtualAddress - KERNEL_VIRTUAL_BASE) + (768 * 4)], eax
 
     ; enable PSE so we can use 4MB pages
     mov ecx, cr4
@@ -103,7 +124,3 @@ section .pmm
 global physical_memory_bitmap
 physical_memory_bitmap:
     times 0x20000 db 0x00
-
-
-
-

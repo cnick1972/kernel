@@ -21,7 +21,8 @@ void timer(Registers* regs)
 
 void kmain(uint32_t eax, uint32_t ebx)
 {
-    multiboot_store_info((multiboot_info*) ebx);
+    
+    multiboot_store_info((void*) ebx);
 
     memory_init(multiboot_get_info());
 
@@ -38,8 +39,10 @@ void kmain(uint32_t eax, uint32_t ebx)
     uint32_t mmap_count = memory_get_mmap_count();
     for(int i = 0; i < mmap_count; i++)
     {
-        serial_printf("MEM: region=%d start=0x%08x length=0x%08x type=%d\n", i, 
-                    mmap[i].addr_low, mmap[i].len_low, mmap[i].type);
+        serial_printf("MEM: region=%d start=0x%016llx length=0x%016llx type=%d\n", i,
+                    (unsigned long long)mmap[i].addr,
+                    (unsigned long long)mmap[i].len,
+                    mmap[i].type);
     }
 
     pmm_init_allocator(multiboot_get_info()->mem_upper + 1024);
@@ -61,16 +64,14 @@ void kmain(uint32_t eax, uint32_t ebx)
 
     kprintf("Memory Map address 0x%08x\n", multiboot_get_info()->mmap_addr);
 
-    kprintf("Framebuffer address: 0x%08x\n",multiboot_get_info()->framebuffer_addr);
+    kprintf("Framebuffer address: 0x%08x%08x\n",
+            (uint32_t)(multiboot_get_info()->framebuffer_addr >> 32),
+            (uint32_t)multiboot_get_info()->framebuffer_addr);
     kprintf("Framebuffer height: %d\n", multiboot_get_info()->framebuffer_height);
     kprintf("framebuffer type: %d\n", multiboot_get_info()->framebuffer_type);
 
     pci_enumerate();
 
-    int * mynewint;
-    mynewint = (int*)kmalloc(sizeof(int));
-    *mynewint = 42;
-    kprintf("mynewint is at 0x%08x and contains %d\n", mynewint, *mynewint);
 
 end:
     for(;;);    
