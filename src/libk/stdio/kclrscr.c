@@ -6,5 +6,5 @@
  */
 void kclrscr()
 {
-    clrscr();
+    console_clear();
 }

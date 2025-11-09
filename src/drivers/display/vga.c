@@ -1,52 +1,51 @@
 #include <vga.h>
 #include <x86.h>
-#include <framebuffer.h>
-
 #include <stddef.h>
 
 const unsigned SCREEN_WIDTH = 80;  /**< Number of columns in VGA text mode. */
 const unsigned SCREEN_HEIGHT = 25; /**< Number of rows in VGA text mode. */
 const uint8_t DEFAULT_COLOR = 0x17; /**< Default attribute byte (foreground/background). */
 
-uint8_t* g_ScreenBuffer = (uint8_t*)0xc00b8000;
-int g_ScreenX = 0, g_ScreenY = 0;
+static uint8_t* vga_text_buffer = (uint8_t*)0xc00b8000;
+static int vga_cursor_x = 0;
+static int vga_cursor_y = 0;
 
 /**
  * @brief Write a character cell in the VGA buffer.
  */
-void putchr(int x, int y, char c)
+static void vga_write_character_cell(int x, int y, char c)
 {
-    g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x)] = c;
+    vga_text_buffer[2 * (y * SCREEN_WIDTH + x)] = c;
 }
 
 /**
  * @brief Set the colour attribute of a cell.
  */
-void putcolor(int x, int y, uint8_t color)
+static void vga_write_color_cell(int x, int y, uint8_t color)
 {
-    g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x) + 1] = color;
+    vga_text_buffer[2 * (y * SCREEN_WIDTH + x) + 1] = color;
 }
 
 /**
  * @brief Read the character stored at a VGA cell.
  */
-char getchr(int x, int y)
+static char vga_read_character_cell(int x, int y)
 {
-    return g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x)];
+    return vga_text_buffer[2 * (y * SCREEN_WIDTH + x)];
 }
 
 /**
  * @brief Read the colour attribute stored at a VGA cell.
  */
-uint8_t getcolor(int x, int y)
+static uint8_t vga_read_color_cell(int x, int y)
 {
-    return g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x) + 1];
+    return vga_text_buffer[2 * (y * SCREEN_WIDTH + x) + 1];
 }
 
 /**
  * @brief Update the hardware cursor position.
  */
-void setcursor(int x, int y)
+static void vga_update_cursor(int x, int y)
 {
     int pos = y * SCREEN_WIDTH + x;
 
@@ -59,18 +58,18 @@ void setcursor(int x, int y)
 /**
  * @brief Clear the VGA text console with the default attribute.
  */
-void text_clrscr()
+void vga_clear(void)
 {
     for (int y = 0; y < SCREEN_HEIGHT; y++)
         for (int x = 0; x < SCREEN_WIDTH; x++)
         {
-            putchr(x, y, '\0');
-            putcolor(x, y, DEFAULT_COLOR);
+            vga_write_character_cell(x, y, '\0');
+            vga_write_color_cell(x, y, DEFAULT_COLOR);
         }
 
-    g_ScreenX = 0;
-    g_ScreenY = 0;
-    setcursor(g_ScreenX, g_ScreenY);
+    vga_cursor_x = 0;
+    vga_cursor_y = 0;
+    vga_update_cursor(vga_cursor_x, vga_cursor_y);
 }
 
 /**
@@ -78,59 +77,59 @@ void text_clrscr()
  *
  * @param lines Number of lines to scroll.
  */
-void scrollback(int lines)
+static void vga_scroll(int lines)
 {
     for (int y = lines; y < SCREEN_HEIGHT; y++)
         for (int x = 0; x < SCREEN_WIDTH; x++)
         {
-            putchr(x, y - lines, getchr(x, y));
-            putcolor(x, y - lines, getcolor(x, y));
+            vga_write_character_cell(x, y - lines, vga_read_character_cell(x, y));
+            vga_write_color_cell(x, y - lines, vga_read_color_cell(x, y));
         }
 
     for (int y = SCREEN_HEIGHT - lines; y < SCREEN_HEIGHT; y++)
         for (int x = 0; x < SCREEN_WIDTH; x++)
         {
-            putchr(x, y, '\0');
-            putcolor(x, y, DEFAULT_COLOR);
+            vga_write_character_cell(x, y, '\0');
+            vga_write_color_cell(x, y, DEFAULT_COLOR);
         }
 
-    g_ScreenY -= lines;
+    vga_cursor_y -= lines;
 }
 
 /**
  * @brief Render a character on the VGA text console with basic control handling.
  */
-void text_putchar(const char c)
+void vga_putchar(char c)
 {
     switch (c)
     {
         case '\n':
-            g_ScreenX = 0;
-            g_ScreenY++;
+            vga_cursor_x = 0;
+            vga_cursor_y++;
             break;
     
         case '\t':
-            for (int i = 0; i < 4 - (g_ScreenX % 4); i++)
-                text_putchar(' ');
+            for (int i = 0; i < 4 - (vga_cursor_x % 4); i++)
+                vga_putchar(' ');
             break;
 
         case '\r':
-            g_ScreenX = 0;
+            vga_cursor_x = 0;
             break;
 
         default:
-            putchr(g_ScreenX, g_ScreenY, c);
-            g_ScreenX++;
+            vga_write_character_cell(vga_cursor_x, vga_cursor_y, c);
+            vga_cursor_x++;
             break;
     }
 
-    if (g_ScreenX >= SCREEN_WIDTH)
+    if (vga_cursor_x >= SCREEN_WIDTH)
     {
-        g_ScreenY++;
-        g_ScreenX = 0;
+        vga_cursor_y++;
+        vga_cursor_x = 0;
     }
-    if (g_ScreenY >= SCREEN_HEIGHT)
-        scrollback(1);
+    if (vga_cursor_y >= SCREEN_HEIGHT)
+        vga_scroll(1);
 
-    setcursor(g_ScreenX, g_ScreenY);
+    vga_update_cursor(vga_cursor_x, vga_cursor_y);
 }

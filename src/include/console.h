@@ -14,15 +14,15 @@ typedef enum {
 /**
  * @brief Function table implemented by concrete console backends.
  */
-typedef struct Console {
+typedef struct console_backend {
     void (*putchar)(char c);               /**< Emit a single character. */
     void (*puts)(const char* str);         /**< Emit a string (optional). */
     void (*clear)(void);                   /**< Clear the display. */
     void (*set_cursor)(int x, int y);      /**< Move the cursor (optional). */
-} Console;
+} console_backend_t;
 
 /** @brief Pointer to the currently active console backend. */
-extern Console* active_console;
+extern console_backend_t* g_active_console;
 
 /**
  * @brief Initialize the console subsystem using Multiboot framebuffer info.
@@ -36,16 +36,16 @@ void console_init(multiboot_info* mbi);
  *
  * @param c Character to output.
  */
-void putc(const char c);
+void console_putc(char c);
 
 /**
  * @brief Emit a null-terminated string via the active console.
  *
  * @param str String to output.
  */
-void write(const char* str);
+void console_write(const char* str);
 
 /**
  * @brief Clear the active console display.
  */
-void clrscr();
+void console_clear(void);

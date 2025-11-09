@@ -19,8 +19,8 @@ void x86_IRQ_Handler(Registers* regs)
 {
     int irq = regs->interrupt - PIC_REMAP_OFFSET;
     
-    uint8_t pic_isr = x86_PIC_ReadInServiceRegister();
-    uint8_t pic_irr = x86_PIC_ReadIrqRequestRegister();
+    uint8_t pic_isr = pic_read_in_service_register();
+    uint8_t pic_irr = pic_read_irq_request_register();
 
     if (g_IRQHandlers[irq] != NULL)
     {
@@ -33,7 +33,7 @@ void x86_IRQ_Handler(Registers* regs)
     }
 
     // send EOI
-    x86_PIC_SendEndOfInterrupt(irq);
+    pic_send_end_of_interrupt(irq);
 }
 
 /**
@@ -41,7 +41,7 @@ void x86_IRQ_Handler(Registers* regs)
  */
 void x86_IRQ_Initialize()
 {
-    x86_PIC_Configure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8);
+    pic_configure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8);
 
     for(int i = 0; i < 16; i++)
         x86_ISR_RegisterHandler(PIC_REMAP_OFFSET + i, x86_IRQ_Handler);

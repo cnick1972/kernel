@@ -26,4 +26,4 @@ typedef struct {
  *
  * @return Font structure with header/glyph pointers, or NULL pointers on failure.
  */
-psf1_font_t load_psf1_font();
+psf1_font_t psf1_font_load();

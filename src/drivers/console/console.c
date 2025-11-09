@@ -2,23 +2,31 @@
 #include <vga.h>
 #include <framebuffer.h>
 #include <serial.h>
+#include <stddef.h>
 
-#define FB_INDEXED_COLOUR   0 /**< Multiboot framebuffer type: indexed palette. */
-#define FB_RGB_COLOUR       1 /**< Multiboot framebuffer type: RGB. */
-#define FB_TEXT             2 /**< Multiboot framebuffer type: VGA text mode. */
+enum framebuffer_type {
+    FRAMEBUFFER_TYPE_INDEXED   = 0, /**< Multiboot framebuffer type: indexed palette. */
+    FRAMEBUFFER_TYPE_RGB       = 1, /**< Multiboot framebuffer type: RGB. */
+    FRAMEBUFFER_TYPE_TEXT      = 2, /**< Multiboot framebuffer type: VGA text mode. */
+};
 
 /** @brief Console implementation backed by VGA text mode. */
-Console text_console = {
-    .putchar = text_putchar,
+static console_backend_t text_console = {
+    .putchar = vga_putchar,
     .puts = NULL,
-    .clear = text_clrscr,
+    .clear = vga_clear,
     .set_cursor = NULL
 };
 
 /** @brief Console implementation backed by the linear framebuffer. */
-Console fb_console = {fb_putchar, NULL, fb_clrscr, NULL};
+static console_backend_t framebuffer_console = {
+    .putchar = framebuffer_putchar,
+    .puts = NULL,
+    .clear = framebuffer_clear,
+    .set_cursor = NULL
+};
 
-Console* active_console = NULL;
+console_backend_t* g_active_console = NULL;
 
 /**
  * @brief Initialize the console backend based on the reported framebuffer type.
@@ -27,56 +35,68 @@ void console_init(multiboot_info* mbi)
 {
     switch(mbi->framebuffer_type)
     {
-    case FB_INDEXED_COLOUR:
+    case FRAMEBUFFER_TYPE_INDEXED:
         break;
 
-    case FB_RGB_COLOUR:
-        InitFramebuffer(mbi);
+    case FRAMEBUFFER_TYPE_RGB:
+        framebuffer_init(mbi);
 
-        uint32_t* frame = fb.address;
-        for(uint32_t i = 0; i < (fb.width * fb.height); i++)
+        uint32_t* frame = g_framebuffer.address;
+        for(uint32_t i = 0; i < (g_framebuffer.width * g_framebuffer.height); i++)
         {
             frame[i] = 0x002366;
         }
 
-        active_console = &fb_console;
+        g_active_console = &framebuffer_console;
         break;
 
-    case FB_TEXT:
+    case FRAMEBUFFER_TYPE_TEXT:
         SerialPrintf("In FB_TEXT\n");
-        active_console = &text_console;
-
-        SerialPrintf("Active 0x%08x, text 0x%08x\n", active_console, &text_console);
+        g_active_console = &text_console;
+        SerialPrintf("Active 0x%08x, text 0x%08x\n", g_active_console, &text_console);
 
         break;
 
     default:
         break;
     }
+
+    if(g_active_console == NULL)
+    {
+        g_active_console = &text_console;
+    }
 }
 
 /**
  * @brief Emit a character through the active console backend.
  */
-void putc(const char c)
+void console_putc(char c)
 {
-    if(active_console->putchar != NULL)
-        active_console->putchar(c);
+    if(g_active_console && g_active_console->putchar != NULL)
+        g_active_console->putchar(c);
 }
 
 /**
  * @brief Emit a string through the active console backend.
  */
-void write(const char* str)
+void console_write(const char* str)
 {
+    if(str == NULL)
+    {
+        return;
+    }
 
+    while(*str)
+    {
+        console_putc(*str++);
+    }
 }
 
 /**
  * @brief Clear the active console display.
  */
-void clrscr()
+void console_clear(void)
 {
-    if(active_console->clear != NULL)
-        active_console->clear();
+    if(g_active_console && g_active_console->clear != NULL)
+        g_active_console->clear();
 }

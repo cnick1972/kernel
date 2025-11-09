@@ -8,44 +8,44 @@
 #define PIC2_DATA_PORT              0xA1 /**< Slave PIC data port. */
 
 /** @brief Bit definitions for PIC initialization control word 1. */
-enum {
+enum pic_icw1_flags {
     PIC_ICW1_ICW4               = 0b00000001,
     PIC_ICW1_SINGLE             = 0b00000010,
     PIC_ICW1_INTERVAL4          = 0b00000100,
     PIC_ICW1_LEVEL              = 0b00001000,
     PIC_ICW1_INITIALIZE         = 0b00010000,
-} PIC_ICW1;
+};
 
 /** @brief Bit definitions for PIC initialization control word 4. */
-enum {
+enum pic_icw4_flags {
     PIC_ICW4_8086               = 0b00000001,
     PIC_ICW4_AUTO_EOI           = 0b00000010,
     PIC_ICW4_BUFFER_MASTER      = 0b00000100,
     PIC_ICW4_BUFFER_SLAVE       = 0b00000000,
     PIC_ICW4_BUFFERED           = 0b00001000,
     PIC_ICW4_SFNM               = 0b00010000,
-} PIC_ICW4;
+};
 
 /** @brief PIC command opcodes. */
-enum {
+enum pic_command {
     PIC_CMD_END_OF_INTERRUPT    = 0x20,
     PIC_CMD_READ_IRR            = 0x0A,
     PIC_CMD_READ_ISR            = 0x0B,
-} PIC_CMD;
+};
 
 /**
  * @brief Program both PICs with new vector offsets and wiring.
  */
-void x86_PIC_Configure(uint8_t offsetPIC1, uint8_t offsetPIC2)
+void pic_configure(uint8_t master_offset, uint8_t slave_offset)
 {
     x86_outb(PIC1_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_INITIALIZE);
     x86_iowait();
     x86_outb(PIC2_COMMAND_PORT, PIC_ICW1_ICW4 | PIC_ICW1_INITIALIZE);
     x86_iowait(); 
 
-    x86_outb(PIC1_DATA_PORT, offsetPIC1);
+    x86_outb(PIC1_DATA_PORT, master_offset);
     x86_iowait();
-    x86_outb(PIC2_DATA_PORT, offsetPIC2);
+    x86_outb(PIC2_DATA_PORT, slave_offset);
     x86_iowait();
 
     x86_outb(PIC1_DATA_PORT, 0x04);
@@ -67,7 +67,7 @@ void x86_PIC_Configure(uint8_t offsetPIC1, uint8_t offsetPIC2)
 /**
  * @brief Signal end-of-interrupt to the master/slave PIC as appropriate.
  */
-void x86_PIC_SendEndOfInterrupt(int irq)
+void pic_send_end_of_interrupt(int irq)
 {
     if(irq >= 8)
         x86_outb(PIC2_COMMAND_PORT, PIC_CMD_END_OF_INTERRUPT);
@@ -77,7 +77,7 @@ void x86_PIC_SendEndOfInterrupt(int irq)
 /**
  * @brief Mask all PIC IRQ lines.
  */
-void x86_PIC_Disable()
+void pic_disable()
 {
     x86_outb(PIC1_DATA_PORT, 0xFF);
     x86_iowait();
@@ -88,7 +88,7 @@ void x86_PIC_Disable()
 /**
  * @brief Mask a specific IRQ line.
  */
-void x86_PIC_Mask(int irq)
+void pic_mask_irq(int irq)
 {
     uint8_t port;
     if (irq < 8)
@@ -106,7 +106,7 @@ void x86_PIC_Mask(int irq)
 /**
  * @brief Unmask a specific IRQ line.
  */
-void x86_PIC_Unmask(int irq)
+void pic_unmask_irq(int irq)
 {
     uint8_t port;
     if (irq < 8)
@@ -124,7 +124,7 @@ void x86_PIC_Unmask(int irq)
 /**
  * @brief Read the Interrupt Request Register (IRR) from the PICs.
  */
-uint16_t x86_PIC_ReadIrqRequestRegister()
+uint16_t pic_read_irq_request_register()
 {
     x86_outb(PIC1_COMMAND_PORT, PIC_CMD_READ_IRR);
     x86_outb(PIC2_COMMAND_PORT, PIC_CMD_READ_IRR);
@@ -134,7 +134,7 @@ uint16_t x86_PIC_ReadIrqRequestRegister()
 /**
  * @brief Read the In-Service Register (ISR) from the PICs.
  */
-uint16_t x86_PIC_ReadInServiceRegister()
+uint16_t pic_read_in_service_register()
 {
     x86_outb(PIC1_COMMAND_PORT, PIC_CMD_READ_ISR);
     x86_outb(PIC2_COMMAND_PORT, PIC_CMD_READ_ISR);

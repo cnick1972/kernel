@@ -8,5 +8,5 @@
  */
 void kputc(const char c)
 {
-    putc(c);
+    console_putc(c);
 }

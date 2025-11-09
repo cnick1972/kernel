@@ -11,7 +11,7 @@ extern uint8_t _binary_src_fonts_Lat15_Terminus16_psf_end[];
  *
  * @return Populated font structure, or NULL pointers on failure.
  */
-psf1_font_t load_psf1_font()
+psf1_font_t psf1_font_load()
 {
     psf1_font_t font;
     font.header = (psf1_header_t*)_binary_src_fonts_Lat15_Terminus16_psf_start;
