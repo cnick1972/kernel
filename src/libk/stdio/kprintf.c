@@ -64,12 +64,6 @@ static int skip_atoi(const char **s)
 #define SMALL	32		/* Must be 32 == 0x20 */
 #define SPECIAL	64		/* 0x */
 
-#define __do_div(n, base) ({ \
-int __res; \
-__res = ((unsigned long) n) % (unsigned) base; \
-n = ((unsigned long) n) / (unsigned) base; \
-__res; })
-
 /**
  * @brief Append a character to a string buffer with bounds checking.
  *
@@ -101,50 +95,66 @@ static inline void append_char(char **str, size_t *remaining, int *total, char c
  * @param type      Flag mask controlling formatting behaviour.
  * @return Updated write cursor.
  */
-static char *number(char *str, size_t *remaining, int *total, long num, int base,
-        int size, int precision, int type)
+static unsigned long long divmod_u64(unsigned long long value,
+        unsigned int base, unsigned int *remainder)
 {
-	/* we are called with base 8, 10 or 16, only, thus don't need "G..."  */
-	static const char digits[16] = "0123456789ABCDEF"; /* "GHIJKLMNOPQRSTUVWXYZ"; */
+	unsigned long long quotient = 0;
+	unsigned long long factor = 1;
+	unsigned long long divisor = base;
 
+	while ((divisor << 1) > divisor && (divisor << 1) <= value) {
+		divisor <<= 1;
+		factor <<= 1;
+	}
+
+	while (factor != 0) {
+		if (value >= divisor) {
+			value -= divisor;
+			quotient |= factor;
+		}
+		divisor >>= 1;
+		factor >>= 1;
+	}
+
+	if (remainder)
+		*remainder = (unsigned int)value;
+
+	return quotient;
+}
+
+static char *format_unsigned(char *str, size_t *remaining, int *total,
+        unsigned long long num, int base, int size, int precision,
+        int type, char sign)
+{
+	static const char digits[16] = "0123456789ABCDEF";
 	char tmp[66];
-	char c, sign, locase;
-	int i;
+	char c, locase;
+	int i = 0;
 
-	/* locase = 0 or 0x20. ORing digits or letters with 'locase'
-	 * produces same digits or (maybe lowercased) letters */
 	locase = (type & SMALL);
 	if (type & LEFT)
 		type &= ~ZEROPAD;
 	if (base < 2 || base > 16)
 		return str;
 	c = (type & ZEROPAD) ? '0' : ' ';
-	sign = 0;
-	if (type & SIGN) {
-		if (num < 0) {
-			sign = '-';
-			num = -num;
-			size--;
-		} else if (type & PLUS) {
-			sign = '+';
-			size--;
-		} else if (type & SPACE) {
-			sign = ' ';
-			size--;
-		}
-	}
+	if (sign)
+		size--;
 	if (type & SPECIAL) {
 		if (base == 16)
 			size -= 2;
 		else if (base == 8)
 			size--;
 	}
-	i = 0;
-	if (num == 0)
+	if (precision == 0 && num == 0)
+		i = 0;
+	else if (num == 0)
 		tmp[i++] = '0';
 	else
-		while (num != 0)
-			tmp[i++] = (digits[__do_div(num, base)] | locase);
+		while (num != 0) {
+			unsigned int rem = 0;
+			num = divmod_u64(num, (unsigned int)base, &rem);
+			tmp[i++] = (digits[rem] | locase);
+		}
 	if (i > precision)
 		precision = i;
 	size -= precision;
@@ -173,6 +183,13 @@ static char *number(char *str, size_t *remaining, int *total, long num, int base
 	return str;
 }
 
+typedef enum {
+	LEN_DEFAULT = 0,
+	LEN_SHORT,
+	LEN_LONG,
+	LEN_LONGLONG
+} length_modifier_t;
+
 /**
  * @brief Format a string into a buffer with explicit bounds.
  *
@@ -195,7 +212,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 	int field_width;    /* width of output field */
 	int precision;      /* min. # of digits for integers; max
 			   number of chars for from string */
-	int qualifier;      /* 'h', 'l', or 'L' for integer fields */
+	length_modifier_t length;
 
 	size_t remaining = size;
 	int total = 0;
@@ -258,9 +275,20 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		}
 
 		/* get the conversion qualifier */
-		qualifier = -1;
-		if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L') {
-			qualifier = *fmt;
+		length = LEN_DEFAULT;
+		if (*fmt == 'h') {
+			length = LEN_SHORT;
+			++fmt;
+		} else if (*fmt == 'l') {
+			++fmt;
+			if (*fmt == 'l') {
+				length = LEN_LONGLONG;
+				++fmt;
+			} else {
+				length = LEN_LONG;
+			}
+		} else if (*fmt == 'L') {
+			length = LEN_LONGLONG;
 			++fmt;
 		}
 
@@ -295,15 +323,21 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				field_width = 2 * sizeof(void *);
 				flags |= ZEROPAD;
 			}
-			str = number(str, &remaining, &total,
-			    (unsigned long)va_arg(args, void *), 16,
-			    field_width, precision, flags);
+			str = format_unsigned(str, &remaining, &total,
+			    (unsigned long long)(uintptr_t)va_arg(args, void *), 16,
+			    field_width, precision, flags, 0);
 			continue;
 
 		case 'n':
-			if (qualifier == 'l') {
+			if (length == LEN_LONGLONG) {
+				long long *ip = va_arg(args, long long *);
+				*ip = total;
+			} else if (length == LEN_LONG) {
 				long *ip = va_arg(args, long *);
 				*ip = total;
+			} else if (length == LEN_SHORT) {
+				short *ip = va_arg(args, short *);
+				*ip = (short)total;
 			} else {
 				int *ip = va_arg(args, int *);
 				*ip = total;
@@ -332,6 +366,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 			break;
 
 		case 'u':
+			flags &= ~SIGN;
 			break;
 
 		default:
@@ -342,17 +377,57 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 				--fmt;
 			continue;
 		}
-		if (qualifier == 'l')
-			num = va_arg(args, unsigned long);
-		else if (qualifier == 'h') {
-			num = (unsigned short)va_arg(args, int);
-			if (flags & SIGN)
-				num = (short)num;
-		} else if (flags & SIGN)
-			num = va_arg(args, int);
-		else
-			num = va_arg(args, unsigned int);
-		str = number(str, &remaining, &total, num, base, field_width, precision, flags);
+		{
+			unsigned long long value = 0;
+			char sign_char = 0;
+
+			if (flags & SIGN) {
+				long long sval;
+				switch (length) {
+				case LEN_LONGLONG:
+					sval = va_arg(args, long long);
+					break;
+				case LEN_LONG:
+					sval = va_arg(args, long);
+					break;
+				case LEN_SHORT:
+					sval = (short)va_arg(args, int);
+					break;
+				default:
+					sval = va_arg(args, int);
+					break;
+				}
+				if (sval < 0) {
+					sign_char = '-';
+					value = (unsigned long long)(-(sval + 1));
+					value += 1ULL;
+				} else {
+					if (flags & PLUS)
+						sign_char = '+';
+					else if (flags & SPACE)
+						sign_char = ' ';
+					value = (unsigned long long)sval;
+				}
+			} else {
+				switch (length) {
+				case LEN_LONGLONG:
+					value = va_arg(args, unsigned long long);
+					break;
+				case LEN_LONG:
+					value = va_arg(args, unsigned long);
+					break;
+				case LEN_SHORT:
+					value = (unsigned short)va_arg(args, unsigned int);
+					break;
+				default:
+					value = va_arg(args, unsigned int);
+					break;
+				}
+			}
+
+			str = format_unsigned(str, &remaining, &total, value, base,
+			    field_width, precision, flags, sign_char);
+		}
 	}
 
 	if (size > 0) {

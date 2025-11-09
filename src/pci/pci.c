@@ -8,9 +8,12 @@
 #include <x86.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <ide.h>
 
 #define PCI_CONFIG_ADDRESS 0xCF8   /**< PCI configuration address register */
 #define PCI_CONFIG_DATA    0xCFC   /**< PCI configuration data register */
+#define PCI_CLASS_MASS_STORAGE 0x01
+#define PCI_SUBCLASS_IDE       0x01
 
 /**
  * @brief Build the configuration address used with PCI configuration mechanism #1.
@@ -119,6 +122,26 @@ static void pci_log_function(uint8_t bus, uint8_t device, uint8_t function)
                 dev.bus, dev.device, dev.function,
                 dev.vendor_id, dev.device_id,
                 class_str, subclass_str, dev.prog_if);
+
+        if (dev.class_code == PCI_CLASS_MASS_STORAGE && dev.subclass == PCI_SUBCLASS_IDE)
+        {
+            ide_pci_descriptor_t ide_desc = {
+                .bus           = dev.bus,
+                .device        = dev.device,
+                .function      = dev.function,
+                .vendor_id     = dev.vendor_id,
+                .device_id     = dev.device_id,
+                .prog_if       = dev.prog_if,
+                .interrupt_line = pci_read_config_byte(bus, device, function, 0x3C),
+            };
+
+            for (uint8_t bar = 0; bar < 6; ++bar)
+            {
+                ide_desc.bar[bar] = pci_read_config_dword(bus, device, function, (uint8_t)(0x10 + (bar * 4)));
+            }
+
+            ide_controller_init_from_pci(&ide_desc);
+        }
     }
 }
 
