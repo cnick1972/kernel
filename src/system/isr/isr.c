@@ -7,10 +7,10 @@
 #include <kerndef.h>
 
 /** @brief High-level ISR handler table (vector-indexed). */
-ISRHandler g_ISRHandlers[256];
+static ISRHandler isr_handlers[256];
 
 /** @brief Human-readable names for processor exceptions. */
-static const char* const g_Exceptions[] = {
+static const char* const isr_exception_messages[] = {
     "Divide by zero error",
     "Debug",
     "Non-maskable Interrupt",
@@ -46,17 +46,17 @@ static const char* const g_Exceptions[] = {
 };
 
 /** @brief Assembly stub that populates the IDT with ISR entries. */
-void x86_ISR_InitializeGates();
+void isr_install_gates(void);
 
 /**
  * @brief Initialize default CPU exception handlers and enable IDT gates.
  */
-void x86_ISR_Initialize()
+void isr_init(void)
 {
-    x86_ISR_InitializeGates();
+    isr_install_gates();
     for(int i = 0; i < 256; i++)
-        x86_IDT_EnableGate(i);
-    x86_IDT_DisableGate(0x80);
+        idt_enable_gate(i);
+    idt_disable_gate(0x80);
 }
 
 /**
@@ -64,16 +64,16 @@ void x86_ISR_Initialize()
  *
  * @param regs Register snapshot captured on interrupt entry.
  */
-void KERNEL_CDECL x86_ISR_Handler(Registers* regs)
+void KERNEL_CDECL isr_dispatch(Registers* regs)
 {
-    if(g_ISRHandlers[regs->interrupt] != NULL)
-        g_ISRHandlers[regs->interrupt](regs);
+    if(isr_handlers[regs->interrupt] != NULL)
+        isr_handlers[regs->interrupt](regs);
     else if(regs->interrupt >= 32)
         kprintf("Unhandled interrupt %d\n", regs->interrupt);
 
     else
     {
-        kprintf("Unhandled exception %d %s\n", regs->interrupt, g_Exceptions[regs->interrupt]);
+        kprintf("Unhandled exception %d %s\n", regs->interrupt, isr_exception_messages[regs->interrupt]);
         
         kprintf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
                regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
@@ -84,7 +84,7 @@ void KERNEL_CDECL x86_ISR_Handler(Registers* regs)
         kprintf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
 
         kprintf("KERNEL PANIC!\n");
-        x86_Panic();        
+        x86_panic();        
     }
 }
 
@@ -94,8 +94,8 @@ void KERNEL_CDECL x86_ISR_Handler(Registers* regs)
  * @param interrupt Vector number (0-255).
  * @param handler   Callback to execute when the interrupt fires.
  */
-void x86_ISR_RegisterHandler(int interrupt, ISRHandler handler)
+void isr_register_handler(int interrupt, ISRHandler handler)
 {
-    g_ISRHandlers[interrupt] = handler;
-    x86_IDT_EnableGate(interrupt);
+    isr_handlers[interrupt] = handler;
+    idt_enable_gate(interrupt);
 }

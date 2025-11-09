@@ -136,9 +136,9 @@ typedef struct {
 /**
  * @brief Retrieve the cached copy of the Multiboot information structure.
  */
-multiboot_info* GetMultiboot();
+multiboot_info* multiboot_get_info(void);
 
 /**
  * @brief Copy the Multiboot information structure for later use.
  */
-void StoreMultiboot(multiboot_info* mbi);
+void multiboot_store_info(multiboot_info* mbi);

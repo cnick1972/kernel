@@ -1,8 +1,8 @@
 [bits 32]
 
-;void __attribute__((cdecl)) x86_IDT_Load(IDTDescriptor* idtDescriptor)
-global x86_IDT_Load
-x86_IDT_Load:
+;void __attribute__((cdecl)) idt_load(IDTDescriptor* idtDescriptor)
+global idt_load
+idt_load:
 
     ; make new call frame
     push ebp             ; save old call frame

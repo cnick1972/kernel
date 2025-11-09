@@ -7,7 +7,7 @@
 /**
  * @brief Initialize COM1 (0x3F8) for 115200 8-N-1 operation.
  */
-void InitSerial()
+void serial_init(void)
 {
     x86_outb(COM1 +1, 0x00);
     x86_outb(COM1 +3, 0x80);
@@ -18,7 +18,7 @@ void InitSerial()
     x86_outb(COM1 +4, 0x0b);      
 }
 
-static uint8_t SerialIsTransmitEmpty()
+static uint8_t serial_is_transmit_empty(void)
 {
     return x86_inb(COM1 + 5) & 0x20;
 }
@@ -26,24 +26,24 @@ static uint8_t SerialIsTransmitEmpty()
 /**
  * @brief Blocking write of a single character to COM1.
  */
-void SerialWriteChar(char c)
+void serial_write_char(char c)
 {
-    while(!SerialIsTransmitEmpty());
+    while(!serial_is_transmit_empty());
 
     x86_outb(COM1, c);
 }
 
-void SerialWriteString(const char* str) {
+void serial_write_string(const char* str) {
     while (*str) {
-        if (*str == '\n') SerialWriteChar('\r'); // For proper line endings
-        SerialWriteChar(*str++);
+        if (*str == '\n') serial_write_char('\r'); // For proper line endings
+        serial_write_char(*str++);
     }
 }
 
 /**
  * @brief Printf-style formatted string over the serial console.
  */
-void SerialPrintf(const char* fmt, ...) 
+void serial_printf(const char* fmt, ...) 
 {
     char buf[512];
     va_list args;
@@ -58,5 +58,5 @@ void SerialPrintf(const char* fmt, ...)
         written = sizeof(buf) - 1;
 
     buf[written] = '\0';
-    SerialWriteString(buf);
+    serial_write_string(buf);
 }

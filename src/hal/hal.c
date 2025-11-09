@@ -7,10 +7,10 @@
 /**
  * @brief Initialize core processor structures and interrupt plumbing.
  */
-void HAL_Initialize()
+void hal_init()
 {
-    x86_GDT_Initialize();
-    x86_IDT_Initialize();
-    x86_ISR_Initialize();
-    x86_IRQ_Initialize();
+    gdt_init();
+    idt_init();
+    isr_init();
+    irq_init();
 }

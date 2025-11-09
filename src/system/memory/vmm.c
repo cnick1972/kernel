@@ -142,7 +142,7 @@ void vmm_page_fault_handler(Registers* regs)
 {
     
 
-    uint32_t cr2 = x86_CR2_register();
+    uint32_t cr2 = x86_read_cr2();
 
    
 
@@ -190,7 +190,7 @@ void vmm_page_fault_handler(Registers* regs)
                         READ_WRITE, 
                         true);
     }
-    x86_ReloadPageDirectory();
+    x86_reload_page_directory();
     //kprintf("In handler 0x%08x\n", cr2);
 }
 
@@ -247,7 +247,7 @@ bool vmm_map_physical_to_virtual(uint8_t* physical_address, uint8_t* virtual_add
                         true);
         mapped_new_entry = true;
     }
-    //x86_ReloadPageDirectory();
+    //x86_reload_page_directory();
 
 
     return mapped_new_entry;
@@ -278,7 +278,7 @@ bool vmm_map_4mb_physical_to_virtual(uint8_t* physical_address, uint8_t* virtual
 
     }    
 
-    x86_ReloadPageDirectory();
+    x86_reload_page_directory();
 
     return true;
 }

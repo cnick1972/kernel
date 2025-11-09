@@ -51,9 +51,9 @@ void console_init(multiboot_info* mbi)
         break;
 
     case FRAMEBUFFER_TYPE_TEXT:
-        SerialPrintf("In FB_TEXT\n");
+        serial_printf("In FB_TEXT\n");
         g_active_console = &text_console;
-        SerialPrintf("Active 0x%08x, text 0x%08x\n", g_active_console, &text_console);
+        serial_printf("Active 0x%08x, text 0x%08x\n", g_active_console, &text_console);
 
         break;
 

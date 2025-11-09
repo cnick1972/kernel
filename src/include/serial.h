@@ -1,20 +1,21 @@
 #pragma once
 
 /**
- * @brief Initialize COM1 for debug output.\n+ */
-void InitSerial();
+ * @brief Initialize COM1 for debug output.
+ */
+void serial_init(void);
 
 /**
  * @brief Write a single character to the serial port.
  */
-void SerialWriteChar(char c);
+void serial_write_char(char c);
 
 /**
  * @brief Write a null-terminated string to the serial port.
  */
-void SerialWriteString(const char* str);
+void serial_write_string(const char* str);
 
 /**
  * @brief Printf-style formatted serial output.
  */
-void SerialPrintf(const char* fmt, ...);
+void serial_printf(const char* fmt, ...);

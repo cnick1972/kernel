@@ -21,15 +21,15 @@ void timer(Registers* regs)
 
 void kmain(uint32_t eax, uint32_t ebx)
 {
-    StoreMultiboot((multiboot_info*) ebx);
+    multiboot_store_info((multiboot_info*) ebx);
 
-    memory_init(GetMultiboot());
+    memory_init(multiboot_get_info());
 
-    InitSerial();
-    HAL_Initialize();
-    x86_IRQ_RegisterHandler(0, timer);
-    x86_IRQ_RegisterHandler(1, keyb_int_handler);
-    x86_ISR_RegisterHandler(14, vmm_page_fault_handler);
+    serial_init();
+    hal_init();
+    irq_register_handler(0, timer);
+    irq_register_handler(1, keyboard_irq_handler);
+    isr_register_handler(14, vmm_page_fault_handler);
 
     multiboot_mmap_entry* mmap;
 
@@ -38,16 +38,16 @@ void kmain(uint32_t eax, uint32_t ebx)
     uint32_t mmap_count = memory_get_mmap_count();
     for(int i = 0; i < mmap_count; i++)
     {
-        SerialPrintf("MEM: region=%d start=0x%08x length=0x%08x type=%d\n", i, 
+        serial_printf("MEM: region=%d start=0x%08x length=0x%08x type=%d\n", i, 
                     mmap[i].addr_low, mmap[i].len_low, mmap[i].type);
     }
 
-    pmm_init_allocator(GetMultiboot()->mem_upper + 1024);
+    pmm_init_allocator(multiboot_get_info()->mem_upper + 1024);
     page_directory_t pd = vmm_initialize_kernel_page_directory();
-    x86_ReloadPageDirectory();
-    console_init(GetMultiboot());
+    x86_reload_page_directory();
+    console_init(multiboot_get_info());
 
-    SerialPrintf("Memory Map: 0x%08x\n", mmap);
+    serial_printf("Memory Map: 0x%08x\n", mmap);
 
 // We can now print to the screen
 
@@ -57,13 +57,13 @@ void kmain(uint32_t eax, uint32_t ebx)
     //uint32_t* ptr = 0; 
     uint32_t* ptr = (uint32_t*)find_rsdp();
 
-    SerialPrintf("framebuffer type: %d\n", GetMultiboot()->framebuffer_type);
+    serial_printf("framebuffer type: %d\n", multiboot_get_info()->framebuffer_type);
 
-    kprintf("Memory Map address 0x%08x\n", GetMultiboot()->mmap_addr);
+    kprintf("Memory Map address 0x%08x\n", multiboot_get_info()->mmap_addr);
 
-    kprintf("Framebuffer address: 0x%08x\n",GetMultiboot()->framebuffer_addr);
-    kprintf("Framebuffer height: %d\n", GetMultiboot()->framebuffer_height);
-    kprintf("framebuffer type: %d\n", GetMultiboot()->framebuffer_type);
+    kprintf("Framebuffer address: 0x%08x\n",multiboot_get_info()->framebuffer_addr);
+    kprintf("Framebuffer height: %d\n", multiboot_get_info()->framebuffer_height);
+    kprintf("framebuffer type: %d\n", multiboot_get_info()->framebuffer_type);
 
     pci_enumerate();
 

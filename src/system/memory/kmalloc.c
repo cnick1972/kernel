@@ -57,10 +57,10 @@ void* kmalloc(size_t size)
 {
     size = align_up(size, HEAP_ALIGNMENT);
 
-    SerialPrintf("Here 1\n");
+    serial_printf("Here 1\n");
 
     if(!free_list) {
-        SerialPrintf("Here 2\n");
+        serial_printf("Here 2\n");
         free_list = (block_t *)heap_virtual_start;
         free_list->size = heap_region_size - BLOCK_SIZE;
         free_list->next = NULL;
@@ -69,12 +69,12 @@ void* kmalloc(size_t size)
 
     block_t* current = free_list;
 
-    SerialPrintf("Here 3\n");
+    serial_printf("Here 3\n");
     while(current) {
         if(current->free && current->size >= size)
         {
             
-            SerialPrintf("Here 4\n");
+            serial_printf("Here 4\n");
             split_block(current, size);
             current->free = 0;
             return (uint8_t*)current + BLOCK_SIZE;

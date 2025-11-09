@@ -1,6 +1,6 @@
 [bits 32]
 
-extern x86_ISR_Handler
+extern isr_dispatch
 
 ; cpu pushes to the stack: ss, esp, eflags, cs, eip
 
@@ -39,7 +39,7 @@ isr_common:
     mov gs, ax
     
     push esp            ; pass pointer to stack to C, so we can access all the pushed information
-    call x86_ISR_Handler
+    call isr_dispatch
     add esp, 4
 
     pop eax             ; restore old segment

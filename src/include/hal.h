@@ -3,4 +3,4 @@
 /**
  * @brief Initialize the hardware abstraction layer (GDT, IDT, ISR, IRQ).
  */
-void HAL_Initialize();
+void hal_init(void);

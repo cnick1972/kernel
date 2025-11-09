@@ -6,4 +6,4 @@
  *
  * @param regs Register snapshot provided by ISR dispatcher.
  */
-void keyb_int_handler(Registers* regs);
+void keyboard_irq_handler(Registers* regs);

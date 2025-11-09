@@ -50,37 +50,37 @@ x86_inl:
     in eax, dx
     ret
 
-;void        ASMCALL x86_Panic()
-global x86_Panic
-x86_Panic:
+;void        ASMCALL x86_panic()
+global x86_panic
+x86_panic:
     cli
     hlt
 
 
-;uint8_t     ASMCALL x86_EnableInterrupts()
-global x86_EnableInterrupts
-x86_EnableInterrupts:
+;uint8_t     ASMCALL x86_enable_interrupts()
+global x86_enable_interrupts
+x86_enable_interrupts:
     sti
     ret
 
-;uint8_t     ASMCALL x86_DisableInterrupts()
-global x86_DisableInterrupts
-x86_DisableInterrupts:
+;uint8_t     ASMCALL x86_disable_interrupts()
+global x86_disable_interrupts
+x86_disable_interrupts:
     cli
     ret
 
 
-;void        ASMCALL x86_InvalidatePage(uint8_t page)
-global x86_InvalidatePage
-x86_InvalidatePage:
+;void        ASMCALL x86_invalidate_page(uint8_t page)
+global x86_invalidate_page
+x86_invalidate_page:
     mov eax, [esp + 4]
     invlpg [eax]
     ret
 
 
-;void        ASMCALL x86_ReloadPageDirectory()
-global x86_ReloadPageDirectory
-x86_ReloadPageDirectory:
+;void        ASMCALL x86_reload_page_directory()
+global x86_reload_page_directory
+x86_reload_page_directory:
     cli             ; disable interrupts, we don't want to be interrupted here
     mov eax, cr3
     mov cr3, eax
@@ -88,9 +88,9 @@ x86_ReloadPageDirectory:
     ret
 
 
-;uint32_t    ASMCALL x86_CR2_register()
-global x86_CR2_register
-x86_CR2_register:
+;uint32_t    ASMCALL x86_read_cr2()
+global x86_read_cr2
+x86_read_cr2:
     cli                 ; disable interrupts
     mov eax, cr2        ; read CR2 into EAX
     sti                 ; re-enable interrupts

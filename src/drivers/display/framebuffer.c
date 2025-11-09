@@ -77,7 +77,7 @@ void framebuffer_init(multiboot_info* mbi)
     // get the builtin font
     framebuffer_font = psf1_font_load();
 
-    SerialPrintf("Font magic: 0x%04x, Mode: %d, Size: %d\n", framebuffer_font.header->magic, framebuffer_font.header->mode, framebuffer_font.header->charsize);
+    serial_printf("Font magic: 0x%04x, Mode: %d, Size: %d\n", framebuffer_font.header->magic, framebuffer_font.header->mode, framebuffer_font.header->charsize);
 }
 
 /**

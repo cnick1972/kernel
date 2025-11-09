@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <kerndef.h>
 
-typedef struct GDTDescriptor GDTDescriptor;
+typedef struct gdt_descriptor gdt_descriptor_t;
 
 /**
  * @brief Assembly helper that loads a GDT descriptor and resets segment registers.
@@ -11,7 +11,7 @@ typedef struct GDTDescriptor GDTDescriptor;
  * @param codeSegment Selector to load into CS.
  * @param dataSegment Selector to load into the remaining segment registers.
  */
-void KERNEL_CDECL x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
+void KERNEL_CDECL gdt_load(gdt_descriptor_t* descriptor, uint16_t code_segment, uint16_t data_segment);
 
 /**
  * @brief Layout of an individual GDT entry (segment descriptor).
@@ -24,15 +24,15 @@ typedef struct
     uint8_t  Access;                    /**< Access rights and type field. */
     uint8_t  FlagsLimitHi;              /**< High limit bits combined with flags. */
     uint8_t  BaseHigh;                  /**< Base address bits 24-31. */
-} __attribute__((packed)) GDTEntry;
+} __attribute__((packed)) gdt_entry_t;
 
 /**
  * @brief Pseudo-descriptor passed to the LGDT instruction.
  */
-struct GDTDescriptor
+struct gdt_descriptor
 {
     uint16_t Limit;                     /**< Size of the GDT in bytes minus one. */
-    GDTEntry* Ptr;                      /**< Linear address of the first GDT entry. */
+    gdt_entry_t* Ptr;                   /**< Linear address of the first GDT entry. */
 } __attribute__((packed));
 
 /**
@@ -93,7 +93,7 @@ typedef enum
 /**
  * @brief Global descriptor table containing kernel code/data segments.
  */
-GDTEntry g_GDT[] = {
+static gdt_entry_t gdt_entries[] = {
     // NULL descriptor
     GDT_ENTRY(0, 0, 0, 0),
 
@@ -114,12 +114,12 @@ GDTEntry g_GDT[] = {
 /**
  * @brief Descriptor referencing the active GDT.
  */
-GDTDescriptor g_GDTDescriptor = { sizeof(g_GDT) - 1, g_GDT};
+static gdt_descriptor_t gdt_descriptor = { sizeof(gdt_entries) - 1, gdt_entries};
 
 /**
  * @brief Populate and load the kernel global descriptor table.
  */
-void x86_GDT_Initialize()
+void gdt_init(void)
 {
-    x86_GDT_Load(&g_GDTDescriptor, x86_GDT_CODE_SEGMENT, x86_GDT_DATA_SEGMENT);
+    gdt_load(&gdt_descriptor, GDT_SELECTOR_CODE, GDT_SELECTOR_DATA);
 }

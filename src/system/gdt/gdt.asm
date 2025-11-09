@@ -1,8 +1,8 @@
 [bits 32]
 
-; void __attribute__((cdecl)) x86_GDT_Load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
-global x86_GDT_Load
-x86_GDT_Load:
+; void __attribute__((cdecl)) gdt_load(GDTDescriptor* descriptor, uint16_t codeSegment, uint16_t dataSegment);
+global gdt_load
+gdt_load:
     
     ; make new call frame
     push ebp             ; save old call frame

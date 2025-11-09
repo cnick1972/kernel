@@ -21,7 +21,7 @@ static const char uk_keymap[128] = {
 /**
  * @brief Basic PS/2 keyboard interrupt handler.
  */
-void keyb_int_handler(Registers* regs)
+void keyboard_irq_handler(Registers* regs)
 {
     uint8_t scancode;
 

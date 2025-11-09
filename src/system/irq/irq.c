@@ -8,24 +8,24 @@
 #define PIC_REMAP_OFFSET        0x20 /**< Offset applied when remapping the PIC. */
 
 /** @brief High-level IRQ handler table (one entry per IRQ line). */
-IRQHandler g_IRQHandlers[16];
+static IRQHandler irq_handlers[16];
 
 /**
  * @brief Low-level IRQ dispatcher invoked from the ISR stubs.
  *
  * @param regs Register snapshot captured on interrupt entry.
  */
-void x86_IRQ_Handler(Registers* regs)
+static void irq_dispatch(Registers* regs)
 {
     int irq = regs->interrupt - PIC_REMAP_OFFSET;
     
     uint8_t pic_isr = pic_read_in_service_register();
     uint8_t pic_irr = pic_read_irq_request_register();
 
-    if (g_IRQHandlers[irq] != NULL)
+    if (irq_handlers[irq] != NULL)
     {
         // handle IRQ
-        g_IRQHandlers[irq](regs);
+        irq_handlers[irq](regs);
     }
     else
     {
@@ -39,14 +39,14 @@ void x86_IRQ_Handler(Registers* regs)
 /**
  * @brief Initialize the PIC and install IRQ handlers into the IDT.
  */
-void x86_IRQ_Initialize()
+void irq_init(void)
 {
     pic_configure(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8);
 
     for(int i = 0; i < 16; i++)
-        x86_ISR_RegisterHandler(PIC_REMAP_OFFSET + i, x86_IRQ_Handler);
+        isr_register_handler(PIC_REMAP_OFFSET + i, irq_dispatch);
 
-    x86_EnableInterrupts();
+    x86_enable_interrupts();
 }
 
 /**
@@ -55,7 +55,7 @@ void x86_IRQ_Initialize()
  * @param irq     IRQ line number (0-15).
  * @param handler Callback to invoke when the IRQ fires.
  */
-void x86_IRQ_RegisterHandler(int irq, IRQHandler handler)
+void irq_register_handler(int irq, IRQHandler handler)
 {
-    g_IRQHandlers[irq] = handler;
+    irq_handlers[irq] = handler;
 }

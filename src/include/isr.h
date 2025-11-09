@@ -15,7 +15,7 @@ typedef void (*ISRHandler)(Registers* regs);
 /**
  * @brief Initialize the CPU exception stubs and enable default gates.
  */
-void x86_ISR_Initialize();
+void isr_init(void);
 
 /**
  * @brief Register a high-level handler for a specific interrupt vector.
@@ -23,4 +23,4 @@ void x86_ISR_Initialize();
  * @param interrupt Vector number (0-255).
  * @param handler   Callback to invoke when the interrupt occurs.
  */
-void x86_ISR_RegisterHandler(int interrupt, ISRHandler handler);
+void isr_register_handler(int interrupt, ISRHandler handler);

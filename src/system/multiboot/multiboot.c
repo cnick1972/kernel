@@ -2,14 +2,14 @@
 #include <memory.h>
 
 /** @brief Cached copy of the Multiboot information block. */
-multiboot_info g_mbi;
+static multiboot_info g_cached_mbi;
 
-void StoreMultiboot(multiboot_info* mbi)
+void multiboot_store_info(multiboot_info* mbi)
 {
-    memcpy(&g_mbi, mbi, sizeof(multiboot_info));
+    memcpy(&g_cached_mbi, mbi, sizeof(multiboot_info));
 }
 
-multiboot_info* GetMultiboot()
+multiboot_info* multiboot_get_info(void)
 {
-    return &g_mbi;
+    return &g_cached_mbi;
 }

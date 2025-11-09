@@ -13,7 +13,7 @@ typedef struct
     uint8_t     Reserved;         /**< Unused, must be zero. */
     uint8_t     Flags;            /**< Gate type, privilege, and presence bits. */
     uint16_t    BaseHigh;         /**< Handler address bits 16-31. */
-} __attribute__((packed)) IDTEntry;
+} __attribute__((packed)) idt_entry_t;
 
 /**
  * @brief Pseudo-descriptor consumed by the LIDT instruction.
@@ -21,25 +21,25 @@ typedef struct
 typedef struct 
 {
     uint16_t    Limit;            /**< Size of the IDT in bytes minus one. */
-    IDTEntry*   Ptr;              /**< Linear address of the first entry. */
-} __attribute__((packed)) IDTDescriptor;
+    idt_entry_t*   Ptr;           /**< Linear address of the first entry. */
+} __attribute__((packed)) idt_descriptor_t;
 
 /**
  * @brief Global interrupt descriptor table.
  */
-IDTEntry g_IDT[256];
+static idt_entry_t idt_entries[256];
 
 /**
  * @brief Descriptor referencing the active IDT.
  */
-IDTDescriptor g_IDTDescriptor = { sizeof(g_IDT) - 1, g_IDT };
+static idt_descriptor_t idt_descriptor = { sizeof(idt_entries) - 1, idt_entries };
 
 /**
  * @brief Assembly helper that loads the IDT descriptor using LIDT.
  *
  * @param idtDescriptor Pointer to the descriptor describing the IDT.
  */
-void KERNEL_CDECL x86_IDT_Load(IDTDescriptor* idtDescriptor);
+void KERNEL_CDECL idt_load(idt_descriptor_t* descriptor);
 
 /**
  * @brief Configure a single IDT gate.
@@ -49,13 +49,13 @@ void KERNEL_CDECL x86_IDT_Load(IDTDescriptor* idtDescriptor);
  * @param segmentDescriptor Code segment selector for the handler.
  * @param flags             Gate attributes (type and privilege).
  */
-void x86_IDT_SetGate(int interrupt, void* base, uint16_t segmentDescriptor, uint8_t flags)
+void idt_set_gate(int interrupt, void* base, uint16_t segment_selector, uint8_t flags)
 {
-    g_IDT[interrupt].BaseLow            = ((uint32_t)base) & 0xFFFF;
-    g_IDT[interrupt].SegmentSelector    = segmentDescriptor;
-    g_IDT[interrupt].Reserved           = 0;
-    g_IDT[interrupt].Flags              = flags;
-    g_IDT[interrupt].BaseHigh           = ((uint32_t)base >> 16) & 0xFFFF;
+    idt_entries[interrupt].BaseLow            = ((uint32_t)base) & 0xFFFF;
+    idt_entries[interrupt].SegmentSelector    = segment_selector;
+    idt_entries[interrupt].Reserved           = 0;
+    idt_entries[interrupt].Flags              = flags;
+    idt_entries[interrupt].BaseHigh           = ((uint32_t)base >> 16) & 0xFFFF;
 }
 
 /**
@@ -63,9 +63,9 @@ void x86_IDT_SetGate(int interrupt, void* base, uint16_t segmentDescriptor, uint
  *
  * @param interrupt Vector number to enable.
  */
-void x86_IDT_EnableGate(int interrupt)
+void idt_enable_gate(int interrupt)
 {
-    FLAG_SET(g_IDT[interrupt].Flags, IDT_FLAG_PRESENT);
+    FLAG_SET(idt_entries[interrupt].Flags, IDT_FLAG_PRESENT);
 }
 
 /**
@@ -73,15 +73,15 @@ void x86_IDT_EnableGate(int interrupt)
  *
  * @param interrupt Vector number to disable.
  */
-void x86_IDT_DisableGate(int interrupt)
+void idt_disable_gate(int interrupt)
 {
-    FLAG_UNSET(g_IDT[interrupt].Flags, IDT_FLAG_PRESENT);
+    FLAG_UNSET(idt_entries[interrupt].Flags, IDT_FLAG_PRESENT);
 }
 
 /**
  * @brief Load the IDT descriptor into the processor.
  */
-void x86_IDT_Initialize()
+void idt_init(void)
 {
-    x86_IDT_Load(&g_IDTDescriptor);
+    idt_load(&idt_descriptor);
 }
