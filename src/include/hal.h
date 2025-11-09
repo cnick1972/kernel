@@ -1,3 +1,9 @@
+/**
+ * @file include/hal.h
+ * @brief Hardware abstraction layer public API.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 /**

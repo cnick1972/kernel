@@ -1,3 +1,9 @@
+/**
+ * @file system/multiboot/multiboot.c
+ * @brief Multiboot2 tag parsing and caching.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <multiboot.h>
 #include <memory.h>
 #include <stddef.h>

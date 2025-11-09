@@ -1,3 +1,9 @@
+/**
+ * @file system/gdt/gdt.c
+ * @brief Global Descriptor Table construction.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <gdt.h>
 #include <stdint.h>
 #include <kerndef.h>

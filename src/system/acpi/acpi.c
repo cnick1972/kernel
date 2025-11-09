@@ -1,3 +1,9 @@
+/**
+ * @file system/acpi/acpi.c
+ * @brief ACPI table discovery utilities.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <acpi.h>
 #include <stddef.h>
 #include <stdint.h>

@@ -1,3 +1,9 @@
+/**
+ * @file libk/include/stdio.h
+ * @brief Lightweight stdio declarations for the kernel.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdarg.h>

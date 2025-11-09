@@ -1,3 +1,9 @@
+/**
+ * @file include/idt.h
+ * @brief Interrupt Descriptor Table types and functions.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <stdint.h>
 

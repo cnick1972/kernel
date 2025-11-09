@@ -1,3 +1,9 @@
+/**
+ * @file include/pci.h
+ * @brief PCI device structures and helper prototypes.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

@@ -1,3 +1,9 @@
+/**
+ * @file include/acpi.h
+ * @brief ACPI table structures and discovery routines.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 /**

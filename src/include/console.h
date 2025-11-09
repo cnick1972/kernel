@@ -1,3 +1,9 @@
+/**
+ * @file include/console.h
+ * @brief Console interface definitions and structures.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

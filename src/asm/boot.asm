@@ -1,3 +1,10 @@
+;-----------------------------------------------------------------------------
+; @file asm/boot.asm
+; @brief Bootloader entry point that sets up paging and jumps into the higher-half kernel.
+; @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+; @history 2025-02-14: Converted header to assembler comment style.
+;-----------------------------------------------------------------------------
+
 [bits 32]
 
 MB2_MAGIC        equ  0xE85250D6

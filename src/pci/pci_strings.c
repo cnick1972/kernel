@@ -1,3 +1,9 @@
+/**
+ * @file pci/pci_strings.c
+ * @brief Human-readable PCI class/subclass name tables.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <pci.h>
 
 /**

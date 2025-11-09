@@ -1,3 +1,9 @@
+/**
+ * @file include/vga.h
+ * @brief VGA console control declarations.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

@@ -1,3 +1,9 @@
+/**
+ * @file include/x86.h
+ * @brief Low-level x86 helper function declarations.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

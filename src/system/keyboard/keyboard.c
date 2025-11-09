@@ -1,3 +1,9 @@
+/**
+ * @file system/keyboard/keyboard.c
+ * @brief PS/2 keyboard interrupt handler.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <irq.h>
 #include <stdio.h>
 #include <x86.h>

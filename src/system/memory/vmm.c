@@ -1,3 +1,9 @@
+/**
+ * @file system/memory/vmm.c
+ * @brief Virtual memory manager implementation.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <meminit.h>
 #include <paging.h>
 #include <stdbool.h>

@@ -1,3 +1,9 @@
+/**
+ * @file include/keyboard.h
+ * @brief Keyboard interrupt handler declaration.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <isr.h>
 

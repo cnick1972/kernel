@@ -1,3 +1,10 @@
+;-----------------------------------------------------------------------------
+; @file drivers/x86/x86.asm
+; @brief Low-level x86 assembly helpers for port I/O and CPU control.
+; @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+; @history 2025-02-14: Converted header to assembler comment style.
+;-----------------------------------------------------------------------------
+
 [bits 32]
 [section .text]
 

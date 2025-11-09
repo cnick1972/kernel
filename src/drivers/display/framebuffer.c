@@ -1,3 +1,9 @@
+/**
+ * @file drivers/display/framebuffer.c
+ * @brief Linear framebuffer console implementation.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <framebuffer.h>
 #include <meminit.h>
 #include <memory.h>

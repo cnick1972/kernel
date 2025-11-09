@@ -1,3 +1,9 @@
+/**
+ * @file system/idt/idt.c
+ * @brief Interrupt Descriptor Table management.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <idt.h>
 #include <stdint.h>
 #include <binary.h>

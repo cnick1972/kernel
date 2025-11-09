@@ -1,3 +1,9 @@
+/**
+ * @file include/framebuffer.h
+ * @brief Framebuffer data structures and helpers.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <stdint.h>
 #include <multiboot.h>

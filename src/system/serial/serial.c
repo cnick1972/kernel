@@ -1,3 +1,9 @@
+/**
+ * @file system/serial/serial.c
+ * @brief Serial port initialization and logging.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <x86.h>
 #include <stdarg.h>
 #include <stdio.h>

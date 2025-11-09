@@ -1,3 +1,9 @@
+/**
+ * @file libk/stdio/kprintf.c
+ * @brief Kernel printf implementation.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>

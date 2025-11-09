@@ -1,3 +1,9 @@
+/**
+ * @file system/isr/isr.c
+ * @brief CPU exception handling logic.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <isr.h>
 #include <idt.h>
 #include <gdt.h>

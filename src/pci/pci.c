@@ -1,3 +1,9 @@
+/**
+ * @file pci/pci.c
+ * @brief PCI bus enumeration logic.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <pci.h>
 #include <x86.h>
 #include <stdio.h>

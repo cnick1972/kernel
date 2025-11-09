@@ -1,3 +1,9 @@
+/**
+ * @file include/pic.h
+ * @brief PIC controller interface declarations.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

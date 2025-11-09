@@ -1,3 +1,9 @@
+/**
+ * @file include/multiboot.h
+ * @brief Multiboot2 tag definitions and cached info.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

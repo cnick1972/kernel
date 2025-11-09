@@ -1,3 +1,9 @@
+/**
+ * @file include/irq.h
+ * @brief IRQ handler registration interfaces.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <isr.h>
 

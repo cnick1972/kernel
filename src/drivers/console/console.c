@@ -1,3 +1,9 @@
+/**
+ * @file drivers/console/console.c
+ * @brief Console backend selection and high-level output helpers.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <console.h>
 #include <vga.h>
 #include <framebuffer.h>

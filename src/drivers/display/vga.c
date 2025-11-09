@@ -1,3 +1,9 @@
+/**
+ * @file drivers/display/vga.c
+ * @brief Legacy VGA text-mode console driver.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <vga.h>
 #include <x86.h>
 #include <stddef.h>

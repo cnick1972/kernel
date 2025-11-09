@@ -1,3 +1,10 @@
+;-----------------------------------------------------------------------------
+; @file system/isr/isr.asm
+; @brief ISR assembly stubs and trampoline.
+; @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+; @history 2025-02-14: Converted header to assembler comment style.
+;-----------------------------------------------------------------------------
+
 [bits 32]
 
 extern isr_dispatch

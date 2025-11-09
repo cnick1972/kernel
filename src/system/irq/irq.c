@@ -1,3 +1,9 @@
+/**
+ * @file system/irq/irq.c
+ * @brief IRQ dispatcher and registration logic.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <irq.h>
 #include <pic.h>
 #include <x86.h>

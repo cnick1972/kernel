@@ -1,3 +1,9 @@
+/**
+ * @file drivers/pic/pic.c
+ * @brief 8259 Programmable Interrupt Controller management routines.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <stdint.h>
 #include <pic.h>
 #include <x86.h>

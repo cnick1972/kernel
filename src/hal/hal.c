@@ -1,3 +1,9 @@
+/**
+ * @file hal/hal.c
+ * @brief Initializes core hardware abstraction layer components.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <hal.h>
 #include <gdt.h>
 #include <idt.h>

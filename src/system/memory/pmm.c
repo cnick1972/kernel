@@ -1,3 +1,9 @@
+/**
+ * @file system/memory/pmm.c
+ * @brief Physical memory manager implementation.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <meminit.h>
 #include <memory.h>
 

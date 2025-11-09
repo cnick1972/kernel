@@ -1,3 +1,9 @@
+/**
+ * @file include/memory.h
+ * @brief Generic memory utility declarations.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>

@@ -1,3 +1,9 @@
+/**
+ * @file kernel.c
+ * @brief Kernel entry point and top-level initialization.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <stdio.h>
 #include <stdint.h>
 

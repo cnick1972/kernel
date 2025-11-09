@@ -1,3 +1,9 @@
+/**
+ * @file system/memory/meminit.c
+ * @brief Caching of the multiboot memory map.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <meminit.h>
 #include <memory.h>
 #include <multiboot.h>

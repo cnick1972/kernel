@@ -1,3 +1,9 @@
+/**
+ * @file include/paging.h
+ * @brief Paging constants and macros.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

@@ -1,3 +1,9 @@
+/**
+ * @file include/isr.h
+ * @brief CPU exception register state and ISR APIs.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <stdint.h>
 

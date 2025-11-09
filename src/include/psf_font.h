@@ -1,3 +1,9 @@
+/**
+ * @file include/psf_font.h
+ * @brief PSF font data structures for glyph rendering.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 #include <stdint.h>

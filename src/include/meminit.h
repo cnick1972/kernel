@@ -1,3 +1,9 @@
+/**
+ * @file include/meminit.h
+ * @brief Memory initialization helpers and allocator interfaces.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 #include <multiboot.h>
 #include <stdint.h>

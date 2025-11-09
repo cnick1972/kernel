@@ -1,3 +1,9 @@
+/**
+ * @file drivers/fonts/psf_font.c
+ * @brief Loads the built-in PSF font used for text rendering.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <psf_font.h>
 #include <stdint.h>
 

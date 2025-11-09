@@ -1,3 +1,9 @@
+/**
+ * @file include/serial.h
+ * @brief Serial port logging interface.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #pragma once
 
 /**

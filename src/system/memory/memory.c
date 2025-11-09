@@ -1,3 +1,9 @@
+/**
+ * @file system/memory/memory.c
+ * @brief Basic memory utility functions.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <memory.h>
 
 

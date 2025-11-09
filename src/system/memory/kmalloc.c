@@ -1,3 +1,9 @@
+/**
+ * @file system/memory/kmalloc.c
+ * @brief Kernel heap allocator implementation.
+ * @copyright Copyright 2025 Chris Nicholson <chris@cnick.org.uk>
+ */
+
 #include <memory.h>
 #include <stddef.h>
 #include <stdbool.h>
