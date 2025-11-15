@@ -94,5 +94,11 @@ void partition_scan_device(block_device_t* device)
                 (unsigned long long)part->lba_start,
                 (unsigned long long)part->sector_count,
                 filesystem_kind_name(part->fs_kind));
+
+        filesystem_mount_partition(device,
+                                   part->index,
+                                   part->lba_start,
+                                   part->sector_count,
+                                   part->fs_kind);
     }
 }

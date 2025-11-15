@@ -19,6 +19,7 @@
 #include <console.h>
 #include <serial.h>
 #include <pci.h>
+#include <vfs.h>
 
 void timer(Registers* regs)
 {
@@ -55,6 +56,7 @@ void kmain(uint32_t eax, uint32_t ebx)
     page_directory_t pd = vmm_initialize_kernel_page_directory();
     x86_reload_page_directory();
     console_init(multiboot_get_info());
+    vfs_init();
 
     serial_printf("Memory Map: 0x%08x\n", mmap);
 
@@ -77,6 +79,7 @@ void kmain(uint32_t eax, uint32_t ebx)
     kprintf("framebuffer type: %d\n", multiboot_get_info()->framebuffer_type);
 
     pci_enumerate();
+    vfs_print_mounts();
 
 
 end:
