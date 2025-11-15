@@ -20,6 +20,12 @@
 #include <serial.h>
 #include <pci.h>
 #include <vfs.h>
+#include <syscall.h>
+#include <tss.h>
+#include <usermode.h>
+
+extern uint8_t stack_top[];
+extern void user_program_start(void);
 
 void timer(Registers* regs)
 {
@@ -57,6 +63,8 @@ void kmain(uint32_t eax, uint32_t ebx)
     x86_reload_page_directory();
     console_init(multiboot_get_info());
     vfs_init();
+    syscall_init();
+    tss_init((uint32_t)stack_top);
 
     serial_printf("Memory Map: 0x%08x\n", mmap);
 
@@ -80,6 +88,7 @@ void kmain(uint32_t eax, uint32_t ebx)
 
     pci_enumerate();
     vfs_print_mounts();
+    usermode_enter(user_program_start);
 
 
 end:

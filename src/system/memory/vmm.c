@@ -103,7 +103,7 @@ page_directory_t vmm_initialize_kernel_page_directory()
                                                              FOUR_KB, 
                                                              false, 
                                                              false, 
-                                                             SUPERVISOR, 
+                                                             USER, 
                                                              READ_WRITE, 
                                                              true);
                                                              
@@ -115,7 +115,7 @@ page_directory_t vmm_initialize_kernel_page_directory()
                                              false, 
                                              false, 
                                              false, 
-                                             SUPERVISOR, 
+                                             USER, 
                                              READ_WRITE, 
                                              true);
     }
